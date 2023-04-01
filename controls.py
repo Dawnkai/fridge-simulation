@@ -1,39 +1,22 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 
-def get_controls(columns):
+def get_controls() -> dbc.Card:
     return dbc.Card(
         [
             html.Div(
                 [
-                    dbc.Label("X variable"),
+                    dbc.Label("Regulator type"),
                     dcc.Dropdown(
-                        id="x-variable",
+                        id="regulator-type",
                         options=[
-                            {"label": col, "value": col} for col in columns
+                            {"label": "PI", "value": "PI"},
+                            {"label": "PID", "value": "PID"}
                         ],
-                        value="sepal length (cm)",
+                        value="PI",
                     ),
                 ]
-            ),
-            html.Div(
-                [
-                    dbc.Label("Y variable"),
-                    dcc.Dropdown(
-                        id="y-variable",
-                        options=[
-                            {"label": col, "value": col} for col in columns
-                        ],
-                        value="sepal width (cm)",
-                    ),
-                ]
-            ),
-            html.Div(
-                [
-                    dbc.Label("Cluster count"),
-                    dbc.Input(id="cluster-count", type="number", value=3),
-                ]
-            ),
+            )
         ],
         body=True,
     )
