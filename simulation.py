@@ -19,8 +19,10 @@ class Simulation:
         
     def reset(self) -> None:
         self.time_measurements = [0.0]
-        self.regulator.reset()
         self.process.reset()
+    
+    def reset_regulator(self, *args):
+        self.regulator.reset(*args)
 
     def get_regulator_type(self) -> str:
         return str(self.regulator)

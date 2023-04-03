@@ -20,7 +20,45 @@ app.layout = dbc.Container(
         html.Hr(),
         dbc.Row(
             [
-                dbc.Col(get_controls(), md=4),
+                dbc.Col(
+                    dbc.Card(
+                        [
+                            html.Div(
+                                [
+                                    dbc.Label("Regulator type"),
+                                    dcc.Dropdown(
+                                        id="regulator-type",
+                                        options=[
+                                            {"label": "PI", "value": "PI"},
+                                            {"label": "PID", "value": "PID"}
+                                        ],
+                                        value="PI",
+                                    )
+                                ]
+                            ),
+                            html.Div(
+                                [
+                                    dbc.Label("Target value"),
+                                    dcc.Input(
+                                        type="number",
+                                        id="target-value",
+                                        step=1,
+                                        value=40
+                                    )
+                                ]
+                            ),
+                            html.Hr(),
+                            html.Div(
+                                dbc.Card(
+                                    get_controls("PI"),
+                                    body=True,
+                                    id="controls"
+                                )
+                            )
+                        ],
+                        body=True,
+                    )
+                , md=4),
                 dbc.Col(dcc.Graph(id="simulation-result"), md=8),
             ],
             align="center",
@@ -30,22 +68,36 @@ app.layout = dbc.Container(
 )
 
 @app.callback(
-    Output("simulation-result", "figure"),
     [
-        Input("regulator-type", "value")
+        Output("simulation-result", "figure"),
+        Output("controls", "children")
+    ],
+    [
+        Input("regulator-type", "value"),
+        Input("target-value", "value"),
+        Input("pi-proportional", "value"),
+        Input("pi-integral", "value"),
+        Input("pid-proportional", "value"),
+        Input("pid-integral", "value"),
+        Input("pid-derivative", "value")
     ],
 )
-def make_graph(regulator_type):
+def make_graph(regulator_type, target_value, pi_p, pi_i, pid_p, pid_i, pid_d):
     if regulator_type != simulation.get_regulator_type():
         if regulator_type == "PI":
             simulation.set_regulator(PI_Regulator())
         else:
             simulation.set_regulator(PID_Regulator())
 
+    if regulator_type == "PI":
+        simulation.reset_regulator(target_value, pi_p, pi_i)
+    else:
+        simulation.reset_regulator(target_value, pid_p, pid_i, pid_d)
+
     simulation.reset()
     simulation.start()
     time, velocity, _, _, _ = simulation.get_display_results()
-    return go.Figure(data=px.line(x=time, y=velocity))
+    return go.Figure(data=px.line(x=time, y=velocity)), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
 
 if __name__ == "__main__":
     app.run_server()
