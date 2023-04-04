@@ -1,9 +1,10 @@
 import math
 from pid_regulator import PID_Regulator
+from fuzzy_regulator import Fuzzy_Regulator
 from tempomat import Tempomat
 
 class Simulation:
-    def __init__(self, regulator = PID_Regulator(), process = Tempomat()) -> None:
+    def __init__(self, regulator = Fuzzy_Regulator(), process = Tempomat()) -> None:
         self.sampling = 0.1 #s [Tp]
         self.simulation_time = 100 #s [Tsim]
         self.regulator = regulator
