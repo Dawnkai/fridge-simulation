@@ -1,5 +1,5 @@
 class PID_Regulator:
-    def __init__(self, target_value : float = 40, kp : float = 1.0, ki : float  = 0.01, kd : float  = 0.0) -> None:
+    def __init__(self, target_value : float = 20, kp : float = 1.0, ki : float  = 0.01, kd : float  = 0.0) -> None:
         self.reset(target_value, kp, ki, kd)
     
     def __str__(self) -> str:
@@ -10,12 +10,13 @@ class PID_Regulator:
         P = self.error[-1] * self.kp
         I = self.I + self.ki * self.error[-1] * (last_time - time_before_that)
         D = self.kd * (self.error[-1] - self.error[-2]) / (last_time - time_before_that)
+        print(P + I + D)
         return (P + I + D)
 
     def get_errors(self) -> list:
         return self.error
     
-    def reset(self, target_value : float = 40, kp : float = 1.0, ki : float  = 0.01, kd : float  = 0.0) -> None:
+    def reset(self, target_value : float = 20, kp : float = 1.0, ki : float  = 0.01, kd : float  = 0.0) -> None:
         self.target_value = target_value
         self.error = [self.target_value]
         self.kp = kp
