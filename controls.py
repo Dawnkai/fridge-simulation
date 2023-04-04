@@ -5,65 +5,70 @@ def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, p
     return [
         html.Div(
             [
-                dbc.Label("Proportional gain"),
+                dbc.Label("Proportional gain: "),
                 dcc.Input(
                     id="pi-proportional",
                     min=0,
                     step=0.001,
                     value=pi_p,
-                    type="number"
+                    type="number",
+                    style={"marginLeft": 10}
                 ),
             ],
             style={'display': 'none' if regulator_type == 'PID' else 'block'}
         ),
         html.Div(
             [
-                dbc.Label("Integral gain"),
+                dbc.Label("Integral gain: "),
                 dcc.Input(
                     id="pi-integral",
                     min=0,
                     step=0.001,
                     value=pi_i,
-                    type="number"
+                    type="number",
+                    style={"marginLeft": 10}
                 )
             ],
             style={'display': 'none' if regulator_type == 'PID' else 'block'}
         ),
         html.Div(
             [
-                dbc.Label("Proportional coefficient"),
+                dbc.Label("Proportional coefficient: "),
                 dcc.Input(
                     id="pid-proportional",
                     min=0,
                     step=0.001,
                     value=pid_p,
-                    type="number"
+                    type="number",
+                    style={"marginLeft": 10}
                 )
             ],
             style={'display': 'none' if regulator_type == 'PI' else 'block'}
         ),
         html.Div(
             [
-                dbc.Label("Integral coefficient"),
+                dbc.Label("Integral coefficient: "),
                 dcc.Input(
                     id="pid-integral",
                     min=0,
                     step=0.001,
                     value=pid_i,
-                    type="number"
+                    type="number",
+                    style={"marginLeft": 10}
                 )
             ],
             style={'display': 'none' if regulator_type == 'PI' else 'block'}
         ),
         html.Div(
             [
-                dbc.Label("Derivative coefficient"),
+                dbc.Label("Derivative coefficient: "),
                 dcc.Input(
                     id="pid-derivative",
                     min=0,
                     step=0.001,
                     value=pid_d,
-                    type="number"
+                    type="number",
+                    style={"marginLeft": 10}
                 )
             ],
             style={'display': 'none' if regulator_type == 'PI' else 'block'}
