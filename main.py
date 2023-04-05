@@ -1,8 +1,6 @@
 import dash_bootstrap_components as dbc
-import plotly.graph_objs as go
-import plotly.express as px
 from dash import Dash, Input, Output, State, dcc, html
-from controls import get_controls
+from controls import get_controls, get_result_graphs
 
 from simulation import Simulation
 from pi_regulator import PI_Regulator
@@ -21,6 +19,7 @@ app.layout = dbc.Container(
             html.Hr(),
             dbc.Row(
                 [
+                    # Window with parameters
                     dbc.Col(
                         dbc.Card(
                             [
@@ -62,7 +61,11 @@ app.layout = dbc.Container(
                             body=True,
                         )
                     , md=4),
-                    dbc.Col(dcc.Graph(id="simulation-result"), md=8),
+                    # Plots and results
+                    dbc.Col(html.Div(
+                        dbc.Tabs(),
+                        id="simulation-result"
+                    ),md=8)
                 ],
                 align="center",
             )],
@@ -75,7 +78,7 @@ app.layout = dbc.Container(
 
 @app.callback(
     [
-        Output("simulation-result", "figure"),
+        Output("simulation-result", "children"),
         Output("controls", "children")
     ],
     [
@@ -103,8 +106,8 @@ def make_graph(regulator_type, target_value, pi_p, pi_i, pid_p, pid_i, pid_d, n_
 
     simulation.reset()
     simulation.start()
-    time, velocity, _, _, _ = simulation.get_display_results()
-    return go.Figure(data=px.line(x=time, y=velocity)), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
+    time, velocity, _, signal, error = simulation.get_display_results()
+    return get_result_graphs(time, velocity, signal, error), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
 
 if __name__ == "__main__":
     app.run_server()
