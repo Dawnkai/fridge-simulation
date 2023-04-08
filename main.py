@@ -1,51 +1,57 @@
 import dash_bootstrap_components as dbc
-import plotly.graph_objs as go
-import plotly.express as px
-from dash import Dash, Input, Output, dcc, html
-from controls import get_controls
+from dash import Dash, Input, Output, State
+from utils import get_controls, get_result_graphs, get_app_layout
 
 from simulation import Simulation
 from pi_regulator import PI_Regulator
 from pid_regulator import PID_Regulator
 
-simulation = Simulation()
+class Display:
+    def __init__(self):
+        self.simulation = Simulation()
+        self.results = []
+        self.app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+        self.app.css.config.serve_locally = True
+        self.app.scripts.config.serve_locally = True
+        self.app.layout = get_app_layout()
+        self.app.callback(
+        [
+            Output("simulation-result", "children"),
+            Output("controls", "children")
+        ],
+        [
+            Input("regulator-type", "value"),
+            State("target-value", "value"),
+            State("pi-proportional", "value"),
+            State("pi-integral", "value"),
+            State("pid-proportional", "value"),
+            State("pid-integral", "value"),
+            State("pid-derivative", "value"),
+            Input("start-simulation", "n_clicks")
+        ])(self.make_graph)
 
-app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-app.css.config.serve_locally = True
-app.scripts.config.serve_locally = True
+    def start(self):
+        self.app.run_server()
 
-app.layout = dbc.Container(
-    [
-        html.H1("Levitating Ball Simulation"),
-        html.Hr(),
-        dbc.Row(
-            [
-                dbc.Col(get_controls(), md=4),
-                dbc.Col(dcc.Graph(id="simulation-result"), md=8),
-            ],
-            align="center",
-        ),
-    ],
-    fluid=True
-)
+    def make_graph(self, regulator_type, target_value, pi_p, pi_i, pid_p, pid_i, pid_d, _):
+        if regulator_type != self.simulation.get_regulator_type():
+            if regulator_type == "PI":
+                self.simulation.set_regulator(PI_Regulator())
+            else:
+                self.simulation.set_regulator(PID_Regulator())
 
-@app.callback(
-    Output("simulation-result", "figure"),
-    [
-        Input("regulator-type", "value")
-    ],
-)
-def make_graph(regulator_type):
-    if regulator_type != simulation.get_regulator_type():
         if regulator_type == "PI":
-            simulation.set_regulator(PI_Regulator())
+            self.simulation.reset_regulator(target_value, pi_p, pi_i)
         else:
-            simulation.set_regulator(PID_Regulator())
+            self.simulation.reset_regulator(target_value, pid_p, pid_i, pid_d)
 
-    simulation.reset()
-    simulation.start()
-    time, velocity, _, _, _ = simulation.get_display_results()
-    return go.Figure(data=px.line(x=time, y=velocity))
+        self.simulation.reset()
+        self.simulation.start()
+        if len(self.results) > 8:
+            self.results.pop(0)
+        self.results.append(self.simulation.get_display_results())
+        return get_result_graphs(self.results), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
 
 if __name__ == "__main__":
-    app.run_server()
+    disp = Display()
+    disp.start()
