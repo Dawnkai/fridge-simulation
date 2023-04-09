@@ -1,15 +1,17 @@
 import dash_bootstrap_components as dbc
 from dash import Dash, Input, Output, State
-from utils import get_controls, get_result_graphs, get_app_layout
 
+from utils import get_controls, get_result_graphs, get_app_layout
+from database import get_connection, execute_query, insert_data
 from simulation import Simulation
 from pi_regulator import PI_Regulator
 from pid_regulator import PID_Regulator
 
 class Display:
-    def __init__(self):
+    def __init__(self, db_conn = None):
         self.simulation = Simulation()
         self.results = []
+        self.db_conn = db_conn
         self.app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
         self.app.css.config.serve_locally = True
         self.app.scripts.config.serve_locally = True
@@ -39,19 +41,25 @@ class Display:
                 self.simulation.set_regulator(PI_Regulator())
             else:
                 self.simulation.set_regulator(PID_Regulator())
-
-        if regulator_type == "PI":
-            self.simulation.reset_regulator(target_value, pi_p, pi_i)
         else:
-            self.simulation.reset_regulator(target_value, pid_p, pid_i, pid_d)
+            if regulator_type == "PI":
+                self.simulation.reset_regulator(target_value, pi_p, pi_i)
+            else:
+                self.simulation.reset_regulator(target_value, pid_p, pid_i, pid_d)
 
-        self.simulation.reset()
-        self.simulation.start()
-        if len(self.results) > 8:
-            self.results.pop(0)
-        self.results.append(self.simulation.get_display_results())
+            self.simulation.reset()
+            self.simulation.start()
+
+            result = self.simulation.get_display_results()
+            if len(self.results) > 8:
+                self.results.pop(0)
+            insert_data(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type, result)
+
         return get_result_graphs(self.results), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
 
 if __name__ == "__main__":
-    disp = Display()
+    conn = get_connection("database.db")
+    execute_query(conn, "CREATE TABLE IF NOT EXISTS Simulations(simulation_id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, time INTEGER NOT NULL, param_1 REAL NULL, param_2 REAL NULL, param_3 REAL NULL, target_value REAL NOT NULL, regulator_type TEXT NOT NULL)", True)
+    execute_query(conn, "CREATE TABLE IF NOT EXISTS Measurements(measurement_id INTEGER PRIMARY KEY AUTOINCREMENT, simulation_id INTEGER NOT NULL REFERENCES Simulations(simulation_id), time REAL NOT NULL, signal REAL NOT NULL, signal_response REAL NOT NULL, error REAL NOT NULL)", True)
+    disp = Display(conn)
     disp.start()
