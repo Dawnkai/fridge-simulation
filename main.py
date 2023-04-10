@@ -2,16 +2,17 @@ import dash_bootstrap_components as dbc
 from dash import Dash, Input, Output, State
 
 from utils import get_controls, get_result_graphs, get_app_layout
-from database import get_connection, execute_query, insert_data
+from database import get_connection, execute_query, insert_data, get_latest_measurements, check_simulation_exists
 from simulation import Simulation
 from pi_regulator import PI_Regulator
 from pid_regulator import PID_Regulator
 
 class Display:
-    def __init__(self, db_conn = None):
+    def __init__(self, db_conn = None, n_measurements = 8):
         self.simulation = Simulation()
         self.results = []
         self.db_conn = db_conn
+        self.n_measurements = n_measurements
         self.app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
         self.app.css.config.serve_locally = True
         self.app.scripts.config.serve_locally = True
@@ -36,6 +37,9 @@ class Display:
         self.app.run_server()
 
     def make_graph(self, regulator_type, target_value, pi_p, pi_i, pid_p, pid_i, pid_d, _):
+        if len(self.results) < (self.n_measurements):
+            self.results = get_latest_measurements(self.db_conn, self.n_measurements)
+
         if regulator_type != self.simulation.get_regulator_type():
             if regulator_type == "PI":
                 self.simulation.set_regulator(PI_Regulator())
@@ -51,9 +55,15 @@ class Display:
             self.simulation.start()
 
             result = self.simulation.get_display_results()
-            if len(self.results) > 8:
+
+            if len(self.results) > (self.n_measurements - 1):
                 self.results.pop(0)
-            insert_data(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type, result)
+            
+            if not check_simulation_exists(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type):
+                insert_data(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type, result)
+                self.results.append(result)
+
+        self.results = get_latest_measurements(self.db_conn, self.n_measurements)
 
         return get_result_graphs(self.results), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
 
