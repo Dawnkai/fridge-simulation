@@ -1,7 +1,6 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 import plotly.graph_objs as go
-import plotly.express as px
 
 def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, pid_p : float = 1.0, pid_i : float = 1.0, pid_d : float = 1.0) -> dbc.Card:
     return [
@@ -96,19 +95,6 @@ def get_result_graphs(results : list) -> dcc.Tabs:
         dcc.Tab(label="Signal", children=[dcc.Graph(figure=signal_figure)]),
         dcc.Tab(label="Error", children=[dcc.Graph(figure=error_figure)])
     ])
-
-# def get_result_graphs(time_result : list, response_result : list, signal_result : list, error_result : list) -> dcc.Tabs:
-#     signal_figure = go.Figure(data=px.line(x=time_result, y=signal_result))
-#     signal_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Response [km/h]")
-#     response_figure = go.Figure(data=px.line(x=time_result, y=response_result))
-#     response_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Signal [V]")
-#     error_figure = go.Figure(data=px.line(x=time_result, y=error_result))
-#     error_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Error [V]")
-#     return dcc.Tabs([
-#         dcc.Tab(label="Signal response", children=[dcc.Graph(figure=response_figure)]),
-#         dcc.Tab(label="Signal", children=[dcc.Graph(figure=signal_figure)]),
-#         dcc.Tab(label="Error", children=[dcc.Graph(figure=error_figure)])
-#     ])
 
 def get_app_layout() -> dbc.Container:
     return dbc.Container(
