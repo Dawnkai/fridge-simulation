@@ -15,7 +15,7 @@ class Simulation:
         # Main loop
         for idx in range(1, math.floor(self.simulation_time / self.sampling) + 1):
             self.time_measurements.append(idx*self.sampling)
-            signal = self.regulator.get_signal(self.process.get_latest_measurement(), self.time_measurements[-1], self.time_measurements[-2],self.process.signals[-1])
+            signal = self.regulator.get_signal(self.process.get_latest_measurement(), self.time_measurements[-1], self.time_measurements[-2],self.process.signals[-1],self.process.max_pull_force)
             self.process.add_signal(signal, self.sampling)
         
     def reset(self) -> None:

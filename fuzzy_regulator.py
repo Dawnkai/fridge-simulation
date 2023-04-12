@@ -20,7 +20,7 @@ class Fuzzy_Regulator:
         signal = self.fuzzy_system.Mamdani_inference(['signal']).get('signal')
         self.fuzzy_system.set_variable("signal", signal)
 
-        #signal = prev_signal + signal 
+         
         if signal > 1:
             signal = 1
         if signal < 0:
