@@ -83,4 +83,3 @@ class Fuzzy_Regulator:
     def reset(self, target_value : float = 35) -> None:
         self.target_value = target_value
         self.error = [self.target_value]
-        
