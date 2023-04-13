@@ -1,9 +1,10 @@
 import math
 from pid_regulator import PID_Regulator
+from fuzzy_regulator import Fuzzy_Regulator
 from tempomat import Tempomat
 
 class Simulation:
-    def __init__(self, regulator = PID_Regulator(), process = Tempomat()) -> None:
+    def __init__(self, regulator = Fuzzy_Regulator(), process = Tempomat()) -> None:
         self.sampling = 0.1 #s [Tp]
         self.simulation_time = 100 #s [Tsim]
         self.regulator = regulator
@@ -14,7 +15,7 @@ class Simulation:
         # Main loop
         for idx in range(1, math.floor(self.simulation_time / self.sampling) + 1):
             self.time_measurements.append(idx*self.sampling)
-            signal = self.regulator.get_signal(self.process.get_latest_measurement(), self.time_measurements[-1], self.time_measurements[-2])
+            signal = self.regulator.get_signal(self.process.get_latest_measurement(), self.time_measurements[-1], self.time_measurements[-2],self.process.signals[-1],self.process.max_pull_force)
             self.process.add_signal(signal, self.sampling)
         
     def reset(self) -> None:
