@@ -8,7 +8,7 @@ class PID_Regulator:
     :param integral_coefficient: integral coefficient of regulator.
     :param derivative_coefficient: derivative coefficient of regulator
     '''
-    def __init__(self, target_value : float = 40, proportional_coefficient : float = 1.0,
+    def __init__(self, target_value : float = 20, proportional_coefficient : float = 1.0,
                  integral_coefficient : float  = 0.01, derivative_coefficient : float  = 0.0) -> None:
         self.reset(target_value, proportional_coefficient, integral_coefficient, derivative_coefficient)
 
@@ -32,9 +32,10 @@ class PID_Regulator:
         """Get all measurement errors detected by regulator."""
         return self.error
 
-    def reset(self, target_value : float = 40, proportional_coefficient : float = 1.0,
+    def reset(self, target_value : float = 20, proportional_coefficient : float = 1.0,
               integral_coefficient : float  = 0.01, derivative_coefficient : float  = 0.0) -> None:
         """Change parameters of the regulator and reset measurements."""
+
         self.target_value = target_value
         self.error = [self.target_value]
         self.proportional_coefficient = proportional_coefficient

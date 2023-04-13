@@ -17,6 +17,8 @@ ax[0, 0].set_xlabel('Time [s]')
 ax[0, 0].set_ylabel('Speed [m/s]')
 ax[0, 0].grid(True)
 
+
+
 # Plot Error value
 ax[0, 1].plot(t, e)
 ax[0, 1].set_title('Error E change in time')
