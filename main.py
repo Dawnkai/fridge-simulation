@@ -1,22 +1,34 @@
+"""Main app file, starts Dash display and database connection."""
+
 import dash_bootstrap_components as dbc
+
 from dash import Dash, Input, Output, State
 
-from utils import get_controls, get_result_graphs, get_app_layout
-from database import get_connection, execute_query, insert_data, get_latest_measurements, check_simulation_exists
-from simulation import Simulation
+from constants import NUM_SIMULATIONS
+from database import get_connection, execute_query, insert_data, get_latest_simulations, check_simulation_exists
 from pi_regulator import PI_Regulator
 from pid_regulator import PID_Regulator
+from fuzzy_regulator import Fuzzy_Regulator
+from simulation import Simulation
+from utils import get_controls, get_result_graphs, get_app_layout
 
 class Display:
-    def __init__(self, db_conn = None, n_measurements = 8):
+    '''
+    Dash object for displaying simulation results.
+    :param db_conn: connection to database
+    :param n_simulations: number of simulations to display
+    '''
+    def __init__(self, db_conn = None, n_simulations = NUM_SIMULATIONS):
         self.simulation = Simulation()
         self.results = []
         self.db_conn = db_conn
-        self.n_measurements = n_measurements
+        self.n_simulations = n_simulations
         self.app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
         self.app.css.config.serve_locally = True
         self.app.scripts.config.serve_locally = True
         self.app.layout = get_app_layout()
+        # Dash does not support dynamic Input field generation, so it's necessary
+        # to add all fields and set them to invisible in css styles dynamically
         self.app.callback(
         [
             Output("simulation-result", "children"),
@@ -34,42 +46,56 @@ class Display:
         ])(self.make_graph)
 
     def start(self):
+        """Start Dash server."""
         self.app.run_server()
 
     def make_graph(self, regulator_type, target_value, pi_p, pi_i, pid_p, pid_i, pid_d, _):
-        if len(self.results) < (self.n_measurements):
-            self.results = get_latest_measurements(self.db_conn, self.n_measurements)
+        """Update graphs based on user input and database state."""
+        # Get latest measurements from database if less results than required are stored in memory
+        if len(self.results) < (self.n_simulations):
+            self.results = get_latest_simulations(self.db_conn, self.n_simulations)
 
+        # Do not run the simulation on regulator change (let the user set parameters first)
         if regulator_type != self.simulation.get_regulator_type():
             if regulator_type == "PI":
                 self.simulation.set_regulator(PI_Regulator())
-            else:
+            elif regulator_type == "PID":
                 self.simulation.set_regulator(PID_Regulator())
+            else:
+                self.simulation.set_regulator(Fuzzy_Regulator())
         else:
             if regulator_type == "PI":
                 self.simulation.reset_regulator(target_value, pi_p, pi_i)
-            else:
+            elif regulator_type == "PID":
                 self.simulation.reset_regulator(target_value, pid_p, pid_i, pid_d)
+            else:
+                self.simulation.reset_regulator(target_value)
 
             self.simulation.reset()
             self.simulation.start()
-
             result = self.simulation.get_display_results()
 
-            if len(self.results) > (self.n_measurements - 1):
+            # Remove oldest result if max number of simulations has been passed
+            if len(self.results) > (self.n_simulations - 1):
                 self.results.pop(0)
-            
+
+            # Do not add simulations with parameters that already exist in database
             if not check_simulation_exists(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type):
                 insert_data(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type, result)
                 self.results.append(result)
 
-        self.results = get_latest_measurements(self.db_conn, self.n_measurements)
+        self.results = get_latest_simulations(self.db_conn, self.n_simulations)
 
         return get_result_graphs(self.results), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
 
 if __name__ == "__main__":
     conn = get_connection("database.db")
-    execute_query(conn, "CREATE TABLE IF NOT EXISTS Simulations(simulation_id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER NOT NULL, time INTEGER NOT NULL, param_1 REAL NULL, param_2 REAL NULL, param_3 REAL NULL, target_value REAL NOT NULL, regulator_type TEXT NOT NULL)", True)
-    execute_query(conn, "CREATE TABLE IF NOT EXISTS Measurements(measurement_id INTEGER PRIMARY KEY AUTOINCREMENT, simulation_id INTEGER NOT NULL REFERENCES Simulations(simulation_id), time REAL NOT NULL, signal REAL NOT NULL, signal_response REAL NOT NULL, error REAL NOT NULL)", True)
+    # Create tables for results storage if it doesn't exist already
+    execute_query(conn, "CREATE TABLE IF NOT EXISTS Simulations(simulation_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                  + "date INTEGER NOT NULL, time INTEGER NOT NULL, param_1 REAL NULL, param_2 REAL NULL, "
+                  + "param_3 REAL NULL, target_value REAL NOT NULL, regulator_type TEXT NOT NULL)", True)
+    execute_query(conn, "CREATE TABLE IF NOT EXISTS Measurements(measurement_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                  + "simulation_id INTEGER NOT NULL REFERENCES Simulations(simulation_id), time REAL NOT NULL, "
+                  + "signal REAL NOT NULL, signal_response REAL NOT NULL, error REAL NOT NULL)", True)
     disp = Display(conn)
     disp.start()
