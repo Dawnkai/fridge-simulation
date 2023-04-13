@@ -32,3 +32,4 @@ $ python main.py
 * `simulation.py` - running simulation with specified regulator and process type
 * `tempomat.py` - tempomat process
 * `database.py` - database driver for DB connection
+* `constants.py` - contant values for all scripts
