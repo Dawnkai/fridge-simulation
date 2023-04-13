@@ -10,7 +10,6 @@ class PID_Regulator:
         P = self.error[-1] * self.kp
         I = self.I + self.ki * self.error[-1] * (last_time - time_before_that)
         D = self.kd * (self.error[-1] - self.error[-2]) / (last_time - time_before_that)
-        print(P + I + D)
         return (P + I + D)
 
     def get_errors(self) -> list:
