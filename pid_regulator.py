@@ -22,22 +22,22 @@ class PID_Regulator:
         :param last_time: latest measurement time.
         :param time_before_that: measurement time right before list_time.
         '''
-        self.error.append(self.target_value - last_value)
-        proportional = self.error[-1] * self.proportional_coefficient
-        integral = self.sums + self.integral_coefficient * self.error[-1] * (last_time - time_before_that)
-        derivative = self.derivative_coefficient * (self.error[-1] - self.error[-2]) / (last_time - time_before_that)
+        self.errors.append(self.target_value - last_value)
+        proportional = self.errors[-1] * self.proportional_coefficient
+        integral = self.sums + self.integral_coefficient * self.errors[-1] * (last_time - time_before_that)
+        derivative = self.derivative_coefficient * (self.errors[-1] - self.errors[-2]) / (last_time - time_before_that)
         return proportional + integral + derivative
 
     def get_errors(self) -> list:
         """Get all measurement errors detected by regulator."""
-        return self.error
+        return self.errors
 
     def reset(self, target_value : float = 20, proportional_coefficient : float = 1.0,
               integral_coefficient : float  = 0.01, derivative_coefficient : float  = 0.0) -> None:
         """Change parameters of the regulator and reset measurements."""
 
         self.target_value = target_value
-        self.error = [self.target_value]
+        self.errors = [self.target_value]
         self.proportional_coefficient = proportional_coefficient
         self.integral_coefficient = integral_coefficient
         self.derivative_coefficient = derivative_coefficient

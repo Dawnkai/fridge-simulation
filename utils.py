@@ -1,9 +1,13 @@
+"""Project utilities (UI controls, app layout and result graph), separated for readability."""
+
 import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 
 from dash import dcc, html
 
-def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, pid_p : float = 1.0, pid_i : float = 1.0, pid_d : float = 1.0) -> dbc.Card:
+def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, pid_p : float = 1.0,
+                 pid_i : float = 1.0, pid_d : float = 1.0) -> dbc.Card:
+    """Regulator controls visible in the GUI."""
     return [
         html.Div(
             [
@@ -17,7 +21,7 @@ def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, p
                     style={"marginLeft": 10}
                 ),
             ],
-            style={'display': 'none' if regulator_type == 'PID' else 'block'}
+            style={'display': 'none' if regulator_type != 'PI' else 'block'}
         ),
         html.Div(
             [
@@ -31,7 +35,7 @@ def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, p
                     style={"marginLeft": 10}
                 )
             ],
-            style={'display': 'none' if regulator_type == 'PID' else 'block'}
+            style={'display': 'none' if regulator_type != 'PI' else 'block'}
         ),
         html.Div(
             [
@@ -45,7 +49,7 @@ def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, p
                     style={"marginLeft": 10}
                 )
             ],
-            style={'display': 'none' if regulator_type == 'PI' else 'block'}
+            style={'display': 'none' if regulator_type != 'PID' else 'block'}
         ),
         html.Div(
             [
@@ -59,7 +63,7 @@ def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, p
                     style={"marginLeft": 10}
                 )
             ],
-            style={'display': 'none' if regulator_type == 'PI' else 'block'}
+            style={'display': 'none' if regulator_type != 'PID' else 'block'}
         ),
         html.Div(
             [
@@ -73,20 +77,21 @@ def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, p
                     style={"marginLeft": 10}
                 )
             ],
-            style={'display': 'none' if regulator_type == 'PI' else 'block'}
+            style={'display': 'none' if regulator_type != 'PID' else 'block'}
         )
     ]
 
 def get_result_graphs(results : list) -> dcc.Tabs:
+    """Graphs with simulation results."""
     signal_figure = go.Figure()
     response_figure = go.Figure()
     error_figure = go.Figure()
-    
+
     for idx, result in enumerate(results):
         signal_figure.add_trace(go.Scatter(x=result[0], y=result[2], name=f"Signals ({idx})"))
         response_figure.add_trace(go.Scatter(x=result[0], y=result[3], name=f"Responses ({idx})"))
         error_figure.add_trace(go.Scatter(x=result[0], y=result[4], name=f"Errors ({idx})"))
-    
+
     signal_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Response [km/h]")
     response_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Signal [V]")
     error_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Error [V]")
@@ -98,6 +103,7 @@ def get_result_graphs(results : list) -> dcc.Tabs:
     ])
 
 def get_app_layout() -> dbc.Container:
+    """Application layout."""
     return dbc.Container(
         [
             dbc.Card([
@@ -116,7 +122,8 @@ def get_app_layout() -> dbc.Container:
                                                 id="regulator-type",
                                                 options=[
                                                     {"label": "PI", "value": "PI"},
-                                                    {"label": "PID", "value": "PID"}
+                                                    {"label": "PID", "value": "PID"},
+                                                    {"label": "Fuzzy", "value": "Fuzzy"}
                                                 ],
                                                 value="PI",
                                             )
@@ -142,7 +149,8 @@ def get_app_layout() -> dbc.Container:
                                             id="controls"
                                         )
                                     ),
-                                    dbc.Button("Go", color="primary", id="start-simulation", n_clicks=0, style={'marginTop': 15, 'width': '100%'})
+                                    dbc.Button("Go", color="primary", id="start-simulation", n_clicks=0,
+                                               style={'marginTop': 15, 'width': '100%'})
                                 ],
                                 body=True,
                             )

@@ -116,14 +116,16 @@ def check_simulation_exists(conn, pi_p : float, pi_i : float, pid_p : float, pid
     if regulator_type == "PI":
         test_query += (
             f"SELECT * FROM Simulations WHERE param_1 = {float(pi_p)} AND param_2 "
-            f" = {float(pi_i)} AND param_3 IS NULL "
+            f" = {float(pi_i)} AND param_3 IS NULL AND "
         )
-    else:
+    elif regulator_type == "PID":
         test_query += (
             f"SELECT * FROM Simulations WHERE param_1 = {float(pid_p)} AND param_2 "
-            f" = {float(pid_i)} AND param_3 = {float(pid_d)} "
+            f" = {float(pid_i)} AND param_3 = {float(pid_d)} AND "
         )
-    test_query += f"AND target_value = {float(target_value)} AND regulator_type = '{regulator_type}'"
+    else:
+        test_query += "SELECT * FROM Simulations WHERE "
+    test_query += f"target_value = {float(target_value)} AND regulator_type = '{regulator_type}'"
 
     simulation_check = select_query(conn, test_query)
     if simulation_check != []:
@@ -148,8 +150,10 @@ def insert_data(conn, pi_p : float, pi_i : float, pid_p : float, pid_i : float, 
     success = True
     if regulator_type == "PI":
         success = insert_simulation(conn, new_sim_id, pi_p, pi_i, "NULL", target_value, "PI")
-    else:
+    elif regulator_type == "PID":
         success = insert_simulation(conn, new_sim_id, pid_p, pid_i, pid_d, target_value, "PID")
+    else:
+        success = insert_simulation(conn, new_sim_id, "NULL", "NULL", "NULL", target_value, "Fuzzy")
     return success and insert_measurements(conn, new_sim_id, measurements)
 
 def get_latest_simulations(conn, n_simulations : int):

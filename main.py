@@ -4,9 +4,11 @@ import dash_bootstrap_components as dbc
 
 from dash import Dash, Input, Output, State
 
+from constants import NUM_SIMULATIONS
 from database import get_connection, execute_query, insert_data, get_latest_simulations, check_simulation_exists
 from pi_regulator import PI_Regulator
 from pid_regulator import PID_Regulator
+from fuzzy_regulator import Fuzzy_Regulator
 from simulation import Simulation
 from utils import get_controls, get_result_graphs, get_app_layout
 
@@ -16,7 +18,7 @@ class Display:
     :param db_conn: connection to database
     :param n_simulations: number of simulations to display
     '''
-    def __init__(self, db_conn = None, n_simulations = 8):
+    def __init__(self, db_conn = None, n_simulations = NUM_SIMULATIONS):
         self.simulation = Simulation()
         self.results = []
         self.db_conn = db_conn
@@ -57,13 +59,17 @@ class Display:
         if regulator_type != self.simulation.get_regulator_type():
             if regulator_type == "PI":
                 self.simulation.set_regulator(PI_Regulator())
-            else:
+            elif regulator_type == "PID":
                 self.simulation.set_regulator(PID_Regulator())
+            else:
+                self.simulation.set_regulator(Fuzzy_Regulator())
         else:
             if regulator_type == "PI":
                 self.simulation.reset_regulator(target_value, pi_p, pi_i)
-            else:
+            elif regulator_type == "PID":
                 self.simulation.reset_regulator(target_value, pid_p, pid_i, pid_d)
+            else:
+                self.simulation.reset_regulator(target_value)
 
             self.simulation.reset()
             self.simulation.start()

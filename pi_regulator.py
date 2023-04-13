@@ -21,17 +21,17 @@ class PI_Regulator:
         :param last_time: unused, last time of the measurement
         :param time_before_that: unused, time before the last_time
         '''
-        self.error.append(self.target_value - last_value)
-        return self.proportional_gain * (self.error[-1]
-                                         + ((self.proportional_gain / self.integral_gain) * sum(self.error)))
+        self.errors.append(self.target_value - last_value)
+        return self.proportional_gain * (self.errors[-1]
+                                         + ((self.proportional_gain / self.integral_gain) * sum(self.errors)))
 
     def get_errors(self) -> list:
         """Get all measurement errors detected by regulator."""
-        return self.error
+        return self.errors
 
     def reset(self, target_value : float = 40, proportional_gain : float = 0.010, integral_gain : float = 0.1) -> None:
         """Change parameters of the regulator and reset measurements."""
         self.target_value = target_value
-        self.error = [self.target_value]
+        self.errors = [self.target_value]
         self.proportional_gain = proportional_gain # T_p (1)
         self.integral_gain = integral_gain # T_i (1)
