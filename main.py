@@ -5,10 +5,10 @@ import dash_bootstrap_components as dbc
 from dash import Dash, Input, Output, State
 
 from constants import NUM_SIMULATIONS
-from database import get_connection, execute_query, insert_data, get_latest_simulations, check_simulation_exists
-from pi_regulator import PI_Regulator
-from pid_regulator import PID_Regulator
-from fuzzy_regulator import Fuzzy_Regulator
+from database import get_connection, insert_data, get_latest_simulations, simulation_exists, create_tables
+from regulators.pi_regulator import PI_Regulator
+from regulators.pid_regulator import PID_Regulator
+from regulators.fuzzy_regulator import Fuzzy_Regulator
 from simulation import Simulation
 from utils import get_controls, get_result_graphs, get_app_layout
 
@@ -80,7 +80,7 @@ class Display:
                 self.results.pop(0)
 
             # Do not add simulations with parameters that already exist in database
-            if not check_simulation_exists(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type):
+            if not simulation_exists(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type):
                 insert_data(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type, result)
                 self.results.append(result)
 
@@ -90,12 +90,6 @@ class Display:
 
 if __name__ == "__main__":
     conn = get_connection("database.db")
-    # Create tables for results storage if it doesn't exist already
-    execute_query(conn, "CREATE TABLE IF NOT EXISTS Simulations(simulation_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                  + "date INTEGER NOT NULL, time INTEGER NOT NULL, param_1 REAL NULL, param_2 REAL NULL, "
-                  + "param_3 REAL NULL, target_value REAL NOT NULL, regulator_type TEXT NOT NULL)", True)
-    execute_query(conn, "CREATE TABLE IF NOT EXISTS Measurements(measurement_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                  + "simulation_id INTEGER NOT NULL REFERENCES Simulations(simulation_id), time REAL NOT NULL, "
-                  + "signal REAL NOT NULL, signal_response REAL NOT NULL, error REAL NOT NULL)", True)
+    create_tables(conn)
     disp = Display(conn)
     disp.start()

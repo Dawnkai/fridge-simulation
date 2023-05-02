@@ -83,20 +83,24 @@ def get_controls(regulator_type : str, pi_p : float = 1.0, pi_i : float = 1.0, p
 
 def get_result_graphs(results : list) -> dcc.Tabs:
     """Graphs with simulation results."""
+    value_figure = go.Figure()
     signal_figure = go.Figure()
     response_figure = go.Figure()
     error_figure = go.Figure()
 
     for idx, result in enumerate(results):
+        value_figure.add_trace(go.Scatter(x=result[0], y=result[1], name=f"Values ({idx})"))
         signal_figure.add_trace(go.Scatter(x=result[0], y=result[2], name=f"Signals ({idx})"))
         response_figure.add_trace(go.Scatter(x=result[0], y=result[3], name=f"Responses ({idx})"))
         error_figure.add_trace(go.Scatter(x=result[0], y=result[4], name=f"Errors ({idx})"))
 
+    value_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Value [km]")
     signal_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Response [km/h]")
     response_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Signal [V]")
     error_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Error [V]")
 
     return dcc.Tabs([
+        dcc.Tab(label="Value", children=[dcc.Graph(figure=value_figure)]),
         dcc.Tab(label="Signal response", children=[dcc.Graph(figure=response_figure)]),
         dcc.Tab(label="Signal", children=[dcc.Graph(figure=signal_figure)]),
         dcc.Tab(label="Error", children=[dcc.Graph(figure=error_figure)])
