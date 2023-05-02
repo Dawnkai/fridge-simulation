@@ -1,7 +1,5 @@
 """Cooling water in refrigerator process."""
 
-from constants import MASS, MIN_RESPONSE, MAX_RESPONSE, MIN_SIGNAL, MAX_SIGNAL, RESISTANCE
-
 class Refrigerator:
     """Cooling water in refrigerator process object."""
     def __init__(self) -> None:
@@ -35,7 +33,10 @@ class Refrigerator:
         self.heat_transfer_measurements.append((1055.05 * self.eer * self.work_measurements[-1])/3600)
 
         #Q= m * c * temperature change, so T = T[-1] + Q/mc
-        self.temperature_measurements.append(self.temperature_measurements[-1] - self.heat_transfer_measurements[-1]/(self.water_mass*self.water_specific_heat) ) 
+        self.temperature_measurements.append(
+            self.temperature_measurements[-1] - self.heat_transfer_measurements[-1]
+            / (self.water_mass*self.water_specific_heat) 
+        ) 
 
     def get_latest_measurement(self) -> float:
         """Get latest temperature measurement."""

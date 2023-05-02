@@ -3,9 +3,9 @@
 import math
 
 from constants import SAMPLING, SIMULATION_TIME
-from pi_regulator import PI_Regulator
-from tempomat import Tempomat
-from refrigerator import Refrigerator
+from regulators.pi_regulator import PI_Regulator
+from processes.tempomat import Tempomat
+from processes.refrigerator import Refrigerator
 
 class Simulation:
     '''
@@ -13,7 +13,7 @@ class Simulation:
     :param regulator: regulator object to use in the simulation.
     :param process: process object that simulation simulates.
     '''
-    def __init__(self, regulator = PI_Regulator(), process = Refrigerator()) -> None:
+    def __init__(self, regulator = PI_Regulator(), process = Tempomat()) -> None:
         self.sampling = SAMPLING
         self.simulation_time = SIMULATION_TIME
         self.regulator = regulator
@@ -25,7 +25,8 @@ class Simulation:
         # Main loop
         for idx in range(1, math.floor(self.simulation_time / self.sampling) + 1):
             self.time_measurements.append(idx*self.sampling)
-            signal = self.regulator.get_signal(self.process.get_latest_measurement(), self.time_measurements[-1],
+            signal = self.regulator.get_signal(self.process.get_latest_measurement(),
+                                               self.time_measurements[-1],
                                                self.time_measurements[-2])
             self.process.add_signal(signal, self.sampling)
 
