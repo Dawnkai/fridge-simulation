@@ -20,3 +20,14 @@ SIMULATION_TIME = 100#s
 DB_FILEPATH = "database.db"
 # Number of simulations displayed on the result graph
 NUM_SIMULATIONS = 8
+
+# Minimum refrigerator work input
+MIN_WORK = 0 #[W]
+# Maximum refrigerator work input
+MAX_WORK = 500 #[W]
+# Mass of water cooled in refrigerator 
+WATER_MASS = 0.5 #m [kg]
+# Specific heat of water
+WATER_SPECIFIC_HEAT = 4182 #m [J/kg /C]
+# Energy efficiency rating
+EER = 18 
