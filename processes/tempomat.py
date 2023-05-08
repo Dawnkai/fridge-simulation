@@ -45,7 +45,7 @@ class Tempomat:
 
     def get_latest_measurement(self) -> float:
         """Get latest velocity measurement."""
-        return self.velocity_measurements[-1]
+        return self.velocity_measurements[-1] 
 
     def get_results(self) -> list:
         """Get process display results."""

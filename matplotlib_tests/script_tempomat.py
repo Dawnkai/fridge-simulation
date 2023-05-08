@@ -2,7 +2,7 @@ from simulation import Simulation
 import matplotlib.pyplot as plt
 
 sim = Simulation()
-sim.reset_regulator(-10)
+sim.reset_regulator(15)
 sim.start()
 t, v, x, u, e = sim.get_display_results()
 

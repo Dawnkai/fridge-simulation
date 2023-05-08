@@ -4,6 +4,7 @@ import math
 
 from constants import SAMPLING, SIMULATION_TIME
 from regulators.pi_regulator import PI_Regulator
+from regulators.fuzzy_regulator import Fuzzy_Regulator
 from processes.tempomat import Tempomat
 from processes.refrigerator import Refrigerator
 
@@ -13,7 +14,7 @@ class Simulation:
     :param regulator: regulator object to use in the simulation.
     :param process: process object that simulation simulates.
     '''
-    def __init__(self, regulator = PI_Regulator(), process = Tempomat()) -> None:
+    def __init__(self, regulator = Fuzzy_Regulator(), process = Refrigerator()) -> None:
         self.sampling = SAMPLING
         self.simulation_time = SIMULATION_TIME
         self.regulator = regulator

@@ -1,5 +1,7 @@
 """Constants shared between all scripts."""
 
+
+#For cruise control
 # Maximum controller response
 MAX_RESPONSE = 1500.0#N
 # Minimum controller response
@@ -8,6 +10,18 @@ MIN_RESPONSE = -1500.0#N
 MIN_SIGNAL = -10#V
 # Maximum allowed signal to the controlled process
 MAX_SIGNAL = 10#V
+
+#For refrigerator
+# Maximum temperature change
+MAX_TEMPERATURE_CHANGE = 50.0#C
+# Minimum temperature change
+MIN_TEMPERATURE_CHANGE = -50.0#C
+# Minimum worked performed by refrigerator
+MIN_WORK = 0#W
+# Maximum worked performed by refrigerator
+MAX_WORK = 500#W
+
+
 # Mass of the controlled object
 MASS = 1200#kg
 # Resistance of the environment

@@ -2,7 +2,7 @@
 
 from simpful import FuzzySystem, TriangleFuzzySet, LinguisticVariable
 
-from constants import MAX_RESPONSE
+from constants import MAX_TEMPERATURE_CHANGE,MAX_WORK
 
 class Fuzzy_Regulator:
     '''
@@ -10,7 +10,7 @@ class Fuzzy_Regulator:
     :param target_value: target regulated process value.
     :param max_response: maximum allowed response.
     '''
-    def __init__(self, target_value : float = 40, max_response : int = MAX_RESPONSE) -> None:
+    def __init__(self, target_value : float = 15, max_response : int = MAX_TEMPERATURE_CHANGE, max_signal : int = MAX_WORK) -> None:
         self.reset(target_value, max_response)
         self.set_rules()
 
@@ -24,13 +24,15 @@ class Fuzzy_Regulator:
         :param last_time: unused, last time of the measurement
         :param time_before_that: unused, time before the last_time
         '''
-        self.errors.append((last_value - self.target_value) / self.max_response)
-        self.fuzzy_system.set_variable("error", self.errors[-1])
-        self.fuzzy_system.set_variable("error_diff", self.errors[-1] - self.errors[-2])
+        self.errors.append((last_value - self.target_value))
+        error= self.errors[-1] / self.max_response
+        prev_error = self.errors[-2] / self.max_response
+        self.fuzzy_system.set_variable("error", error)
+        self.fuzzy_system.set_variable("error_diff", error - prev_error)
         signal = self.fuzzy_system.Mamdani_inference(['signal']).get('signal')
         self.fuzzy_system.set_variable("signal", signal)
-
-        return max(0, min(signal, 1)) * self.max_response
+        
+        return  max(-1, min(signal, 1)) * self.max_signal
 
     def get_errors(self) -> list:
         """Get all measurement errors detected by regulator."""
@@ -56,6 +58,7 @@ class Fuzzy_Regulator:
         mult = 1.0
 
         # Control variable
+        
         self.fuzzy_system.add_linguistic_variable("signal", LinguisticVariable(
             [
                 TriangleFuzzySet(-1.0 * mult, -1.0 * mult, -0.80 * mult,   term="PLLL"),
@@ -72,6 +75,8 @@ class Fuzzy_Regulator:
             ],
             universe_of_discourse=[-1.0, 1.0]
         ))
+
+        
         self.fuzzy_system.add_rules([
             "IF (error IS LL) THEN signal IS PHHH",
             "IF (error  IS L) AND (error_diff IS CL) THEN signal IS PHH",
@@ -86,8 +91,14 @@ class Fuzzy_Regulator:
             "IF (error IS HH) THEN signal IS PLLL",
             ])
 
-    def reset(self, target_value : float = 35, max_response : int = MAX_RESPONSE) -> None:
+        
+
+        
+
+    def reset(self, target_value : float = 25, max_response : int = MAX_TEMPERATURE_CHANGE ,max_signal : int = MAX_WORK) -> None:
         """Change parameters of the regulator and reset measurements."""
         self.target_value = target_value
         self.max_response = max_response
-        self.errors = [self.target_value]
+        self.max_signal = max_signal
+        self.errors = [self.target_value/self.max_response]
+        
