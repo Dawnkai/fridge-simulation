@@ -1,11 +1,10 @@
 """Main app file, starts Dash display and database connection."""
-
 import dash_bootstrap_components as dbc
 
 from dash import Dash, Input, Output, State
 
 from constants import NUM_SIMULATIONS
-from database import get_connection, insert_data, get_latest_simulations, simulation_exists, create_tables
+from database import Database
 from regulators.pi_regulator import PI_Regulator
 from regulators.pid_regulator import PID_Regulator
 from regulators.fuzzy_regulator import Fuzzy_Regulator
@@ -13,22 +12,14 @@ from simulation import Simulation
 from utils import get_controls, get_result_graphs, get_app_layout
 
 class Display:
-    '''
-    Dash object for displaying simulation results.
-    :param db_conn: connection to database
-    :param n_simulations: number of simulations to display
-    '''
-    def __init__(self, db_conn = None, n_simulations = NUM_SIMULATIONS):
+    def __init__(self):
+        self.db = Database("database.db")
         self.simulation = Simulation()
-        self.results = []
-        self.db_conn = db_conn
-        self.n_simulations = n_simulations
         self.app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
         self.app.css.config.serve_locally = True
         self.app.scripts.config.serve_locally = True
         self.app.layout = get_app_layout()
-        # Dash does not support dynamic Input field generation, so it's necessary
-        # to add all fields and set them to invisible in css styles dynamically
+        self.running = False
         self.app.callback(
         [
             Output("simulation-result", "children"),
@@ -42,18 +33,11 @@ class Display:
             State("pid-proportional", "value"),
             State("pid-integral", "value"),
             State("pid-derivative", "value"),
-            Input("start-simulation", "n_clicks")
+            Input("simulation-button", "n_clicks")
         ])(self.make_graph)
-
-    def start(self):
-        """Start Dash server."""
-        self.app.run_server()
 
     def make_graph(self, regulator_type, target_value, pi_p, pi_i, pid_p, pid_i, pid_d, _):
         """Update graphs based on user input and database state."""
-        # Get latest measurements from database if less results than required are stored in memory
-        if len(self.results) < (self.n_simulations):
-            self.results = get_latest_simulations(self.db_conn, self.n_simulations)
 
         # Do not run the simulation on regulator change (let the user set parameters first)
         if regulator_type != self.simulation.get_regulator_type():
@@ -63,7 +47,8 @@ class Display:
                 self.simulation.set_regulator(PID_Regulator())
             else:
                 self.simulation.set_regulator(Fuzzy_Regulator())
-        else:
+        elif not self.running:
+            self.running = True
             if regulator_type == "PI":
                 self.simulation.reset_regulator(target_value, pi_p, pi_i)
             elif regulator_type == "PID":
@@ -75,21 +60,17 @@ class Display:
             self.simulation.start()
             result = self.simulation.get_display_results()
 
-            # Remove oldest result if max number of simulations has been passed
-            if len(self.results) > (self.n_simulations - 1):
-                self.results.pop(0)
-
             # Do not add simulations with parameters that already exist in database
-            if not simulation_exists(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type):
-                insert_data(self.db_conn, pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type, result)
-                self.results.append(result)
+            if not self.db.simulation_exists(pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type):
+                self.db.insert_data(pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type, result)
+            self.running = False
 
-        self.results = get_latest_simulations(self.db_conn, self.n_simulations)
-
-        return get_result_graphs(self.results), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
+        results = self.db.get_latest_simulations(NUM_SIMULATIONS, target_value)
+        return get_result_graphs(results), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
+    
+    def run_server(self):
+        self.app.run_server()
 
 if __name__ == "__main__":
-    conn = get_connection("database.db")
-    create_tables(conn)
-    disp = Display(conn)
-    disp.start()
+    app = Display()
+    app.run_server()
