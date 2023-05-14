@@ -28,15 +28,13 @@ class Display:
         [
             Input("regulator-type", "value"),
             State("target-value", "value"),
-            State("pi-proportional", "value"),
-            State("pi-integral", "value"),
-            State("pid-proportional", "value"),
-            State("pid-integral", "value"),
-            State("pid-derivative", "value"),
+            State("param-1", "value"),
+            State("param-2", "value"),
+            State("param-3", "value"),
             Input("simulation-button", "n_clicks")
         ])(self.make_graph)
 
-    def make_graph(self, regulator_type, target_value, pi_p, pi_i, pid_p, pid_i, pid_d, _):
+    def make_graph(self, regulator_type, target_value, param_1, param_2, param_3, _):
         """Update graphs based on user input and database state."""
 
         # Do not run the simulation on regulator change (let the user set parameters first)
@@ -50,9 +48,9 @@ class Display:
         elif not self.running:
             self.running = True
             if regulator_type == "PI":
-                self.simulation.reset_regulator(target_value, pi_p, pi_i)
+                self.simulation.reset_regulator(target_value, param_1, param_2)
             elif regulator_type == "PID":
-                self.simulation.reset_regulator(target_value, pid_p, pid_i, pid_d)
+                self.simulation.reset_regulator(target_value, param_1, param_2, param_3)
             else:
                 self.simulation.reset_regulator(target_value)
 
@@ -61,12 +59,12 @@ class Display:
             result = self.simulation.get_display_results()
 
             # Do not add simulations with parameters that already exist in database
-            if not self.db.simulation_exists(pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type):
-                self.db.insert_data(pi_p, pi_i, pid_p, pid_i, pid_d, target_value, regulator_type, result)
+            if not self.db.simulation_exists(param_1, param_2, param_3, target_value, regulator_type):
+                self.db.insert_data(param_1, param_2, param_3, target_value, regulator_type, result)
             self.running = False
 
         results = self.db.get_latest_simulations(NUM_SIMULATIONS, target_value)
-        return get_result_graphs(results), get_controls(regulator_type, pi_p, pi_i, pid_p, pid_i, pid_d)
+        return get_result_graphs(results), get_controls(regulator_type, param_1, param_2, param_3)
     
     def run_server(self):
         self.app.run_server()

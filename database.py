@@ -79,9 +79,9 @@ class Database:
                 f"param_2,param_3, target_value, regulator_type)"
                 f"VALUES ("
                 f"{sim_id}, {now.strftime('%Y%m%d')}, {now.strftime('%H%M%S')},"
-                f"{param_1 if param_1 is not None else 'NULL'},"
-                f"{param_2 if param_2 is not None else 'NULL'},"
-                f"{param_3 if param_3 is not None else 'NULL'},"
+                f"{param_1 if param_1 is not None and regulator_type != 'Fuzzy' else 'NULL'},"
+                f"{param_2 if param_2 is not None and regulator_type != 'Fuzzy' else 'NULL'},"
+                f"{param_3 if param_3 is not None and regulator_type == 'PID' else 'NULL'},"
                 f"{target_value}, '{regulator_type}'"
                 f")"
             )
@@ -117,8 +117,7 @@ class Database:
             cur.close()
         return True
 
-    def simulation_exists(self, pi_p : float, pi_i : float, pid_p : float, pid_i : float,
-                        pid_d : float, target_value : float, regulator_type : str) -> bool:
+    def simulation_exists(self, param_1 : float, param_2 : float, param_3 : float, target_value : float, regulator_type : str) -> bool:
         '''
         Check if simulation using provided parameters already exists in the database.
         :param pi_p: proportional PI regulator parameter.
@@ -133,13 +132,13 @@ class Database:
         test_query = ""
         if regulator_type == "PI":
             test_query += (
-                f"SELECT * FROM Simulations WHERE param_1 = {float(pi_p)} AND param_2 "
-                f" = {float(pi_i)} AND param_3 IS NULL AND "
+                f"SELECT * FROM Simulations WHERE param_1 = {float(param_1)} AND param_2 "
+                f" = {float(param_2)} AND param_3 IS NULL AND "
             )
         elif regulator_type == "PID":
             test_query += (
-                f"SELECT * FROM Simulations WHERE param_1 = {float(pid_p)} AND param_2 "
-                f" = {float(pid_i)} AND param_3 = {float(pid_d)} AND "
+                f"SELECT * FROM Simulations WHERE param_1 = {float(param_1)} AND param_2 "
+                f" = {float(param_2)} AND param_3 = {float(param_3)} AND "
             )
         else:
             test_query += "SELECT * FROM Simulations WHERE "
@@ -158,7 +157,7 @@ class Database:
             cur.close()
             conn.close()
 
-    def insert_data(self, pi_p : float, pi_i : float, pid_p : float, pid_i : float, pid_d : float,
+    def insert_data(self, param_1 : float, param_2 : float, param_3 : float,
                     target_value : float, regulator_type : str, measurements : list) -> bool:
         '''
         Insert simulation and display results data into database.
@@ -175,12 +174,7 @@ class Database:
         new_sim_id = self.get_new_simulation_id(conn)
         success = True
         try:
-            if regulator_type == "PI":
-                success = self.insert_simulation(conn, new_sim_id, pi_p, pi_i, None, target_value, "PI")
-            elif regulator_type == "PID":
-                success = self.insert_simulation(conn, new_sim_id, pid_p, pid_i, pid_d, target_value, "PID")
-            else:
-                success = self.insert_simulation(conn, new_sim_id, None, None, None, target_value, "Fuzzy")
+            success = self.insert_simulation(conn, new_sim_id, param_1, param_2, param_3, target_value, regulator_type)
             return success and self.insert_measurements(conn, new_sim_id, measurements)
         finally:
             conn.close()
