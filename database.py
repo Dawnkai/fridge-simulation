@@ -179,6 +179,39 @@ class Database:
         finally:
             conn.close()
 
+    def update_data(self, param_1 : float, param_2 : float, param_3 : float,
+                    target_value : float, regulator_type : str) -> bool:
+        conn = self.get_connection()
+        now = datetime.now()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                f"SELECT simulation_id FROM Simulations WHERE regulator_type = '{regulator_type}' AND "
+                f"param_1 {f'= {param_1}' if param_1 is not None and regulator_type != 'Fuzzy' else 'IS NULL'} AND "
+                f"param_2 {f'= {param_2}' if param_2 is not None and regulator_type != 'Fuzzy' else 'IS NULL'} AND "
+                f"param_3 {f'= {param_3}' if param_3 is not None and regulator_type == 'PID' else 'IS NULL'} AND "
+                f"target_value = {target_value}"
+            )
+            sim_id = cur.fetchall()[0][0]
+            cur.execute(
+                f"UPDATE Simulations SET simulation_date = {now.strftime('%Y%m%d')},"
+                f"simulation_time = {now.strftime('%H%M%S')} WHERE simulation_id = {sim_id}"
+            )
+            conn.commit()
+            return True
+        except sqlite3.Error as error:
+            print(f"Error in update_data : {error}")
+            return False
+        finally:
+            conn.close()
+        
+    def insert_or_update_data(self, param_1 : float, param_2 : float, param_3 : float,
+                              target_value : float, regulator_type : str, measurements : list) -> bool:
+        if not self.simulation_exists(param_1, param_2, param_3, target_value, regulator_type):
+            self.insert_data(param_1, param_2, param_3, target_value, regulator_type, measurements)
+        else:
+            self.update_data(param_1, param_2, param_3, target_value, regulator_type)
+
     def get_latest_simulations(self, n_simulations : int, target_value : float):
         '''
         Get n latest simulation results from the database.
@@ -189,7 +222,7 @@ class Database:
             cur = conn.cursor()
             cur.execute(
                 f"SELECT simulation_id, regulator_type, param_1, param_2, param_3 FROM Simulations WHERE target_value = {target_value} "
-                f"ORDER BY simulation_date, simulation_time DESC LIMIT {n_simulations}"
+                f"ORDER BY simulation_date DESC, simulation_time DESC LIMIT {n_simulations}"
             )
             sims = [ [val[0], val[1], [val[2], val[3], val[4]]] for val in cur.fetchall() ]
 

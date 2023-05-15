@@ -5,9 +5,6 @@ from dash import Dash, Input, Output, State
 
 from constants import NUM_SIMULATIONS
 from database import Database
-from regulators.pi_regulator import PI_Regulator
-from regulators.pid_regulator import PID_Regulator
-from regulators.fuzzy_regulator import Fuzzy_Regulator
 from simulation import Simulation
 from utils import get_controls, get_result_graphs, get_app_layout, form_valid
 
@@ -46,12 +43,9 @@ class Display:
                 self.simulation.reset()
                 self.simulation.start()
                 result = self.simulation.get_display_results()
-
-                # Do not add simulations with parameters that already exist in database
-                if not self.db.simulation_exists(param_1, param_2, param_3, target_value, regulator_type):
-                    self.db.insert_data(param_1, param_2, param_3, target_value, regulator_type, result)
-                self.running = False
-
+                self.db.insert_or_update_data(param_1, param_2, param_3, target_value, regulator_type, result)
+        
+        self.running = False
         results = self.db.get_latest_simulations(NUM_SIMULATIONS, target_value)
         return get_result_graphs(results), get_controls(regulator_type, param_1, param_2, param_3)
     
