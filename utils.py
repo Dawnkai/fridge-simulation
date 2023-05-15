@@ -18,7 +18,7 @@ def get_controls(regulator_type : str, param_1 : float = 1.0, param_2 : float = 
                     value=param_1,
                     type="number",
                     style={"marginLeft": 10}
-                ),
+                )
             ],
             style={'display': 'none' if regulator_type == 'Fuzzy' else 'block'}
         ),
@@ -107,6 +107,18 @@ def get_result_graphs(results : list) -> dcc.Tabs:
         dcc.Tab(label="Signal", children=[dcc.Graph(figure=signal_figure)]),
         dcc.Tab(label="Error", children=[dcc.Graph(figure=error_figure)])
     ])
+
+def form_valid(regulator_type : str, param_1 : float, param_2 : float, param_3 : float) -> list:
+    if regulator_type == 'Fuzzy':
+        return [True, True, True]
+
+    is_valid_1 = True if param_1 is not None else False
+    is_valid_2 = True if param_2 is not None else False
+    if regulator_type == 'PI':
+        return [is_valid_1, is_valid_2, True]
+    
+    is_valid_3 = True if param_3 is not None else False
+    return [is_valid_1, is_valid_2, is_valid_3]
 
 def get_app_layout() -> dbc.Container:
     """Application layout."""

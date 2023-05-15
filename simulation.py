@@ -4,6 +4,7 @@ import math
 
 from constants import SAMPLING, SIMULATION_TIME
 from regulators.pi_regulator import PI_Regulator
+from regulators.pid_regulator import PID_Regulator
 from regulators.fuzzy_regulator import Fuzzy_Regulator
 from processes.tempomat import Tempomat
 from processes.refrigerator import Refrigerator
@@ -36,17 +37,27 @@ class Simulation:
         self.time_measurements = [0.0]
         self.process.reset()
 
-    def reset_regulator(self, *args):
+    def reset_regulator(self, target_value, param_1, param_2, param_3):
         """Reset selected regulator object."""
-        self.regulator.reset(*args)
+        if str(self.regulator) == "PI":
+            self.regulator.reset(target_value, param_1, param_2)
+        elif str(self.regulator) == "PID":
+            self.regulator.reset(target_value, param_1, param_2, param_3)
+        else:
+            self.regulator.reset(target_value)
 
     def get_regulator_type(self) -> str:
         """Get name of selected regulator."""
         return str(self.regulator)
 
-    def set_regulator(self, regulator) -> None:
-        """Change selected regulator to provided object."""
-        self.regulator = regulator
+    def set_regulator(self, regulator_type) -> None:
+        """Change selected regulator to provided regulator type."""
+        if regulator_type == "PI":
+            self.regulator = PI_Regulator()
+        elif regulator_type == "PID":
+            self.regulator = PID_Regulator()
+        else:
+            self.regulator = Fuzzy_Regulator()
 
     def set_process(self, process) -> None:
         """Change simulated process to provided process."""

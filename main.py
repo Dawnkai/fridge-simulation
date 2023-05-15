@@ -9,7 +9,7 @@ from regulators.pi_regulator import PI_Regulator
 from regulators.pid_regulator import PID_Regulator
 from regulators.fuzzy_regulator import Fuzzy_Regulator
 from simulation import Simulation
-from utils import get_controls, get_result_graphs, get_app_layout
+from utils import get_controls, get_result_graphs, get_app_layout, form_valid
 
 class Display:
     def __init__(self):
@@ -36,32 +36,21 @@ class Display:
 
     def make_graph(self, regulator_type, target_value, param_1, param_2, param_3, _):
         """Update graphs based on user input and database state."""
-
-        # Do not run the simulation on regulator change (let the user set parameters first)
-        if regulator_type != self.simulation.get_regulator_type():
-            if regulator_type == "PI":
-                self.simulation.set_regulator(PI_Regulator())
-            elif regulator_type == "PID":
-                self.simulation.set_regulator(PID_Regulator())
-            else:
-                self.simulation.set_regulator(Fuzzy_Regulator())
-        elif not self.running:
-            self.running = True
-            if regulator_type == "PI":
-                self.simulation.reset_regulator(target_value, param_1, param_2)
-            elif regulator_type == "PID":
+        if form_valid(regulator_type, param_1, param_2, param_3):
+            # Do not run the simulation on regulator change (let the user set parameters first)
+            if regulator_type != self.simulation.get_regulator_type():
+                self.simulation.set_regulator(regulator_type)
+            elif not self.running:
+                self.running = True
                 self.simulation.reset_regulator(target_value, param_1, param_2, param_3)
-            else:
-                self.simulation.reset_regulator(target_value)
+                self.simulation.reset()
+                self.simulation.start()
+                result = self.simulation.get_display_results()
 
-            self.simulation.reset()
-            self.simulation.start()
-            result = self.simulation.get_display_results()
-
-            # Do not add simulations with parameters that already exist in database
-            if not self.db.simulation_exists(param_1, param_2, param_3, target_value, regulator_type):
-                self.db.insert_data(param_1, param_2, param_3, target_value, regulator_type, result)
-            self.running = False
+                # Do not add simulations with parameters that already exist in database
+                if not self.db.simulation_exists(param_1, param_2, param_3, target_value, regulator_type):
+                    self.db.insert_data(param_1, param_2, param_3, target_value, regulator_type, result)
+                self.running = False
 
         results = self.db.get_latest_simulations(NUM_SIMULATIONS, target_value)
         return get_result_graphs(results), get_controls(regulator_type, param_1, param_2, param_3)
