@@ -87,14 +87,15 @@ def get_result_graphs(results : list) -> dcc.Tabs:
     error_figure = go.Figure()
 
     for idx, result in enumerate(results):
+        line_color = get_line_color(result[5]) if idx > 0 else dict(color="#fa07f2")
         value_figure.add_trace(go.Scatter(x=result[0], y=result[1], name=get_line_name(idx, result),
-                                          line=get_line_color(result[5])))
+                                          line=line_color))
         signal_figure.add_trace(go.Scatter(x=result[0], y=result[2], name=get_line_name(idx, result),
-                                           line=get_line_color(result[5])))
+                                           line=line_color))
         response_figure.add_trace(go.Scatter(x=result[0], y=result[3], name=get_line_name(idx, result),
-                                             line=get_line_color(result[5])))
+                                             line=line_color))
         error_figure.add_trace(go.Scatter(x=result[0], y=result[4], name=get_line_name(idx, result),
-                                          line=get_line_color(result[5])))
+                                          line=line_color))
 
     value_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Value [km]")
     signal_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Response [km/h]")
