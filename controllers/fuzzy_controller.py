@@ -61,17 +61,17 @@ class Fuzzy_Controller:
         
         self.fuzzy_system.add_linguistic_variable("signal", LinguisticVariable(
             [
-                TriangleFuzzySet(-1.0 * mult, -1.0 * mult, -0.80 * mult,   term="PLLL"),
-                TriangleFuzzySet(-1.0 * mult, -0.80 * mult, -0.60 * mult,   term="PLL"),
-                TriangleFuzzySet(-0.80 * mult, -0.60 * mult, -0.40 * mult,   term="PL"),
-                TriangleFuzzySet(-0.60 * mult, -0.40 * mult, -0.20 * mult,  term="PMLL"),
-                TriangleFuzzySet(-0.40 * mult, -0.20 * mult, -0.00 * mult,  term="PML"),
+                TriangleFuzzySet(-1.0 * mult, -1.0 * mult, -0.80 * mult,   term="PHHH"),
+                TriangleFuzzySet(-1.0 * mult, -0.80 * mult, -0.60 * mult,   term="PHH"),
+                TriangleFuzzySet(-0.80 * mult, -0.60 * mult, -0.40 * mult,   term="PH"),
+                TriangleFuzzySet(-0.60 * mult, -0.40 * mult, -0.20 * mult,  term="PMHH"),
+                TriangleFuzzySet(-0.40 * mult, -0.20 * mult, -0.00 * mult,  term="PMH"),
                 TriangleFuzzySet(-0.05 * mult, 0.0 * mult, 0.05 * mult,  term="PM"), # MIDDLE
-                TriangleFuzzySet(0.00 * mult, 0.2 * mult, 0.40 * mult,  term="PMH"),
-                TriangleFuzzySet(0.20 * mult, 0.40 * mult, 0.60 * mult,  term="PMHH"),
-                TriangleFuzzySet(0.40 * mult, 0.60 * mult, 0.8 * mult, term="PH"),
-                TriangleFuzzySet(0.60 * mult, 0.80 * mult, 1.00 * mult, term="PHH"),
-                TriangleFuzzySet(0.8 * mult, 1.00 * mult, 1.00 * mult, term="PHHH")
+                TriangleFuzzySet(0.00 * mult, 0.2 * mult, 0.40 * mult,  term="PML"),
+                TriangleFuzzySet(0.20 * mult, 0.40 * mult, 0.60 * mult,  term="PMLL"),
+                TriangleFuzzySet(0.40 * mult, 0.60 * mult, 0.8 * mult, term="PL"),
+                TriangleFuzzySet(0.60 * mult, 0.80 * mult, 1.00 * mult, term="PLL"),
+                TriangleFuzzySet(0.8 * mult, 1.00 * mult, 1.00 * mult, term="PLLL")
             ],
             universe_of_discourse=[-1.0, 1.0]
         ))
