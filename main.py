@@ -16,14 +16,14 @@ class Display:
         self.app.css.config.serve_locally = True
         self.app.scripts.config.serve_locally = True
         self.app.layout = get_app_layout()
-        self.running = False
         self.app.callback(
         [
             Output("simulation-result", "children"),
             Output("controls", "children")
         ],
         [
-            Input("regulator-type", "value"),
+            Input("controller-type", "value"),
+            State("initial-value", "value"),
             State("target-value", "value"),
             State("param-1", "value"),
             State("param-2", "value"),
@@ -31,23 +31,21 @@ class Display:
             Input("simulation-button", "n_clicks")
         ])(self.make_graph)
 
-    def make_graph(self, regulator_type, target_value, param_1, param_2, param_3, _):
+    def make_graph(self, controller_type, init_value, target_value, param_1, param_2, param_3, _):
         """Update graphs based on user input and database state."""
-        if form_valid(regulator_type, param_1, param_2, param_3):
-            # Do not run the simulation on regulator change (let the user set parameters first)
-            if regulator_type != self.simulation.get_regulator_type():
-                self.simulation.set_regulator(regulator_type)
-            elif not self.running:
-                self.running = True
-                self.simulation.reset_regulator(target_value, param_1, param_2, param_3)
-                self.simulation.reset()
+        if form_valid(controller_type, init_value, target_value, param_1, param_2, param_3):
+            # Do not run the simulation on controller change (let the user set parameters first)
+            if controller_type != self.simulation.get_controller_type():
+                self.simulation.set_controller(controller_type)
+            else:
+                self.simulation.reset_controller(target_value, param_1, param_2, param_3)
+                self.simulation.reset(init_value)
                 self.simulation.start()
                 result = self.simulation.get_display_results()
-                self.db.insert_or_update_data(param_1, param_2, param_3, target_value, regulator_type, result)
-        
-        self.running = False
+                self.db.insert_or_update_data(param_1, param_2, param_3, target_value, controller_type, result)
+
         results = self.db.get_latest_simulations(NUM_SIMULATIONS, target_value)
-        return get_result_graphs(results), get_controls(regulator_type, param_1, param_2, param_3)
+        return get_result_graphs(results), get_controls(controller_type, param_1, param_2, param_3)
     
     def run_server(self):
         self.app.run_server()

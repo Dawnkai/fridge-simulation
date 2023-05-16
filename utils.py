@@ -5,12 +5,17 @@ import plotly.graph_objs as go
 
 from dash import dcc, html
 
-def get_controls(regulator_type : str, param_1 : float = 1.0, param_2 : float = 1.0, param_3 : float = 1.0) -> dbc.Card:
-    """Regulator controls visible in the GUI."""
+def get_controls(controller_type : str, param_1 : float = 1.0, param_2 : float = 1.0, param_3 : float = 1.0) -> dbc.Card:
+    '''
+    Controller controls visible in the GUI.
+    :param param_1: first parameter (only for PI and PID)
+    :param param_2: second parameter (only for PI and PID)
+    :param param_3: third parameter (only for PID)
+    '''
     return [
         html.Div(
             [
-                dbc.Label("Proportional gain: " if regulator_type == 'PI' else 'Proportional coefficient'),
+                dbc.Label("Proportional gain: " if controller_type == 'PI' else 'Proportional coefficient'),
                 dcc.Input(
                     id="param-1",
                     min=0,
@@ -20,11 +25,11 @@ def get_controls(regulator_type : str, param_1 : float = 1.0, param_2 : float = 
                     style={"marginLeft": 10}
                 )
             ],
-            style={'display': 'none' if regulator_type == 'Fuzzy' else 'block'}
+            style={'display': 'none' if controller_type == 'Fuzzy' else 'block'}
         ),
         html.Div(
             [
-                dbc.Label("Integral gain: " if regulator_type == 'PI' else 'Integral coefficient'),
+                dbc.Label("Integral gain: " if controller_type == 'PI' else 'Integral coefficient'),
                 dcc.Input(
                     id="param-2",
                     min=0,
@@ -34,7 +39,7 @@ def get_controls(regulator_type : str, param_1 : float = 1.0, param_2 : float = 
                     style={"marginLeft": 10}
                 )
             ],
-            style={'display': 'none' if regulator_type == 'Fuzzy' else 'block'}
+            style={'display': 'none' if controller_type == 'Fuzzy' else 'block'}
         ),
         html.Div(
             [
@@ -48,20 +53,20 @@ def get_controls(regulator_type : str, param_1 : float = 1.0, param_2 : float = 
                     style={"marginLeft": 10}
                 )
             ],
-            style={'display': 'none' if regulator_type != 'PID' else 'block'}
+            style={'display': 'none' if controller_type != 'PID' else 'block'}
         )
     ]
 
-def get_line_color(regulator_type : str) -> dict:
+def get_line_color(controller_type : str) -> dict:
     '''
-    Get color of the line for results based on regulator type.
-    :param regulator_type: type of the regulator (PI, PID or Fuzzy)
+    Get color of the line for results based on controller type.
+    :param controller_type: type of the controller (PI, PID or Fuzzy)
     '''
-    if regulator_type == "Fuzzy":
+    if controller_type == "Fuzzy":
         return dict(color="#ff0000")
-    if regulator_type == 'PID':
+    if controller_type == 'PID':
         return dict(color="#00ff00")
-    if regulator_type == 'PI':
+    if controller_type == 'PI':
         return dict(color="#0000ff")
     return dict(color="#000000")
 
@@ -81,41 +86,53 @@ def get_line_name(idx : int, result : list) -> str:
 
 def get_result_graphs(results : list) -> dcc.Tabs:
     """Graphs with simulation results."""
-    value_figure = go.Figure()
-    signal_figure = go.Figure()
-    response_figure = go.Figure()
+    temperature_figure = go.Figure()
+    work_figure = go.Figure()
+    heat_transfer_figure = go.Figure()
     error_figure = go.Figure()
 
     for idx, result in enumerate(results):
         line_color = get_line_color(result[5]) if idx > 0 else dict(color="#fa07f2")
-        value_figure.add_trace(go.Scatter(x=result[0], y=result[1], name=get_line_name(idx, result),
+        temperature_figure.add_trace(go.Scatter(x=result[0], y=result[1], name=get_line_name(idx, result),
                                           line=line_color))
-        signal_figure.add_trace(go.Scatter(x=result[0], y=result[2], name=get_line_name(idx, result),
+        work_figure.add_trace(go.Scatter(x=result[0], y=result[2], name=get_line_name(idx, result),
                                            line=line_color))
-        response_figure.add_trace(go.Scatter(x=result[0], y=result[3], name=get_line_name(idx, result),
+        heat_transfer_figure.add_trace(go.Scatter(x=result[0], y=result[3], name=get_line_name(idx, result),
                                              line=line_color))
         error_figure.add_trace(go.Scatter(x=result[0], y=result[4], name=get_line_name(idx, result),
                                           line=line_color))
 
-    value_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Value [km]")
-    signal_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Response [km/h]")
-    response_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Signal [V]")
-    error_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Error [V]")
+    temperature_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Temperature [°C]")
+    work_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Work [J]")
+    heat_transfer_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Heat transfer [J/s]")
+    error_figure.update_layout(xaxis_title="Time [s]", yaxis_title="Error [°C]")
 
     return dcc.Tabs([
-        dcc.Tab(label="Value", children=[dcc.Graph(figure=value_figure)]),
-        dcc.Tab(label="Signal response", children=[dcc.Graph(figure=response_figure)]),
-        dcc.Tab(label="Signal", children=[dcc.Graph(figure=signal_figure)]),
+        dcc.Tab(label="Temperature", children=[dcc.Graph(figure=temperature_figure)]),
+        dcc.Tab(label="Work", children=[dcc.Graph(figure=work_figure)]),
+        dcc.Tab(label="Heat transfer", children=[dcc.Graph(figure=heat_transfer_figure)]),
         dcc.Tab(label="Error", children=[dcc.Graph(figure=error_figure)])
     ])
 
-def form_valid(regulator_type : str, param_1 : float, param_2 : float, param_3 : float) -> list:
-    if regulator_type == 'Fuzzy':
+def form_valid(controller_type : str, init_value : float, target_value : float, param_1 : float, param_2 : float, param_3 : float) -> list:
+    '''
+    Check if user input is correct.
+    :param controller_type: name of the controller
+    :param init_value: initial value of the simulation
+    :param target_value: target value of the simulation
+    :param param_1: first parameter (only for PI and PID)
+    :param param_2: second parameter (only for PI and PID)
+    :param param_3: third parameter (only for PID)
+    '''
+    if init_value == None or target_value == None:
+        return [False, False, False]
+
+    if controller_type == 'Fuzzy':
         return [True, True, True]
 
     is_valid_1 = True if param_1 is not None else False
     is_valid_2 = True if param_2 is not None else False
-    if regulator_type == 'PI':
+    if controller_type == 'PI':
         return [is_valid_1, is_valid_2, True]
     
     is_valid_3 = True if param_3 is not None else False
@@ -136,9 +153,9 @@ def get_app_layout() -> dbc.Container:
                                 [
                                     html.Div(
                                         [
-                                            dbc.Label("Regulator type", style={"fontWeight": "bold"}),
+                                            dbc.Label("Controller type", style={"fontWeight": "bold"}),
                                             dcc.Dropdown(
-                                                id="regulator-type",
+                                                id="controller-type",
                                                 options=[
                                                     {"label": "PI", "value": "PI"},
                                                     {"label": "PID", "value": "PID"},
@@ -150,13 +167,25 @@ def get_app_layout() -> dbc.Container:
                                     ),
                                     html.Div(
                                         [
+                                            dbc.Label("Initial value", style={'marginTop': 10, 'fontWeight': 'bold'}),
+                                            html.Br(),
+                                            dcc.Input(
+                                                type="number",
+                                                id="initial-value",
+                                                step=1,
+                                                value=25
+                                            )
+                                        ]
+                                    ),
+                                    html.Div(
+                                        [
                                             dbc.Label("Target value", style={'marginTop': 10, "fontWeight": "bold"}),
                                             html.Br(),
                                             dcc.Input(
                                                 type="number",
                                                 id="target-value",
                                                 step=1,
-                                                value=40
+                                                value=10
                                             )
                                         ]
                                     ),

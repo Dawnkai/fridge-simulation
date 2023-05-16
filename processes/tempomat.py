@@ -30,7 +30,7 @@ class Tempomat:
     def add_signal(self, signal : float, sampling : float) -> None:
         '''
         Calculate system response and environment variables.
-        :param signal: signal from the regulator.
+        :param signal: signal from the controller.
         :param sampling: sampling rate of the simulation.
         '''
         self.signals.append(min(self.max_signal, max(self.min_signal, signal)))
@@ -51,10 +51,10 @@ class Tempomat:
         """Get process display results."""
         return [self.velocity_measurements, self.position_measurements, self.signals]
 
-    def reset(self) -> None:
+    def reset(self, init_value : float = 0.0) -> None:
         """Reset process."""
         # Measurements
-        self.velocity_measurements = [0.0]
+        self.velocity_measurements = [init_value]
         self.position_measurements = [0.0]
         self.pull_force = 0 #N [Fc]
         self.signals = [0.0] #V [U]

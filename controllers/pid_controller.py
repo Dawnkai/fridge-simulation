@@ -1,12 +1,12 @@
-"""PID regulator component."""
+"""PID controller component."""
 
-class PID_Regulator:
+class PID_Controller:
     '''
-    PID regulator object.
+    PID controller object.
     :param target_value: target regulated process value.
-    :param proportional_coefficient: proportional coefficient of regulator.
-    :param integral_coefficient: integral coefficient of regulator.
-    :param derivative_coefficient: derivative coefficient of regulator
+    :param proportional_coefficient: proportional coefficient of controller.
+    :param integral_coefficient: integral coefficient of controller.
+    :param derivative_coefficient: derivative coefficient of controller
     '''
     def __init__(self, target_value : float = 20, proportional_coefficient : float = 1.0,
                  integral_coefficient : float  = 0.01, derivative_coefficient : float  = 0.0) -> None:
@@ -17,7 +17,7 @@ class PID_Regulator:
 
     def get_signal(self, last_value : float, last_time : int, time_before_that : int) -> float:
         '''
-        Get response from PID regulator.
+        Get response from PID controller.
         :param last_value: last value of controlled object.
         :param last_time: latest measurement time.
         :param time_before_that: measurement time right before list_time.
@@ -29,12 +29,12 @@ class PID_Regulator:
         return proportional + integral + derivative
 
     def get_errors(self) -> list:
-        """Get all measurement errors detected by regulator."""
+        """Get all measurement errors detected by controller."""
         return self.errors
 
     def reset(self, target_value : float = 20, proportional_coefficient : float = 1.0,
               integral_coefficient : float  = 0.01, derivative_coefficient : float  = 0.0) -> None:
-        """Change parameters of the regulator and reset measurements."""
+        """Change parameters of the controller and reset measurements."""
 
         self.target_value = target_value
         self.errors = [self.target_value]

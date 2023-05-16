@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS Simulations(
     param_2 REAL NULL,
     param_3 REAL NULL,
     target_value REAL NOT NULL,
-    regulator_type TEXT NOT NULL
+    controller_type TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Measurements(
