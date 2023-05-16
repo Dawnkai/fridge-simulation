@@ -22,7 +22,7 @@ class Refrigerator:
     def add_signal(self, signal : float, sampling : float) -> None:
         '''
         Calculate system response and environment variables.
-        :param signal: signal from the regulator.
+        :param signal: signal from the controller.
         :param sampling: sampling rate of the simulation.
         '''
         self.work_measurements.append(min(self.max_work, max(self.min_work, -1*(signal))))
@@ -44,13 +44,13 @@ class Refrigerator:
 
     def get_results(self) -> list:
         """Get process display results."""
-        return [self.work_measurements, self.heat_transfer_measurements, self.temperature_measurements]
+        return [self.temperature_measurements, self.work_measurements, self.heat_transfer_measurements]
 
-    def reset(self) -> None:
+    def reset(self, init_value : float = 25.0) -> None:
         """Reset process."""
         # Measurements
         self.work_measurements = [0.0]
-        self.temperature_measurements = [25.0]
+        self.temperature_measurements = [init_value]
         self.heat_transfer_measurements=[0.0]
         
         

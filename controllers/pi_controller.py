@@ -1,11 +1,11 @@
-"""PI regulator component."""
+"""PI controller component."""
 
-class PI_Regulator:
+class PI_Controller:
     '''
-    PI regulator object.
+    PI controller object.
     :param target_value: target regulated process value.
-    :param proportional_gain: proportional gain of regulator.
-    :param integral_gain: integral gain of regulator.
+    :param proportional_gain: proportional gain of controller.
+    :param integral_gain: integral gain of controller.
     '''
     def __init__(self, target_value : float = 40, proportional_gain : float = 0.010,
                  integral_gain : float = 0.1) -> None:
@@ -16,7 +16,7 @@ class PI_Regulator:
 
     def get_signal(self, last_value : float, last_time : int, time_before_that : int) -> float:
         '''
-        Get response from the regulator.
+        Get response from the controller.
         :param last_value: last value of controlled object.
         :param last_time: unused, last time of the measurement
         :param time_before_that: unused, time before the last_time
@@ -26,11 +26,11 @@ class PI_Regulator:
                                          + ((self.proportional_gain / self.integral_gain) * sum(self.errors)))
 
     def get_errors(self) -> list:
-        """Get all measurement errors detected by regulator."""
+        """Get all measurement errors detected by controller."""
         return self.errors
 
     def reset(self, target_value : float = 40, proportional_gain : float = 0.010, integral_gain : float = 0.1) -> None:
-        """Change parameters of the regulator and reset measurements."""
+        """Change parameters of the controller and reset measurements."""
         self.target_value = target_value
         self.errors = [self.target_value]
         self.proportional_gain = proportional_gain # T_p (1)

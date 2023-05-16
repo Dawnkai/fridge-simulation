@@ -1,12 +1,12 @@
-"""Fuzzy regulator component."""
+"""Fuzzy controller component."""
 
 from simpful import FuzzySystem, TriangleFuzzySet, LinguisticVariable
 
 from constants import MAX_TEMPERATURE_CHANGE,MAX_WORK
 
-class Fuzzy_Regulator:
+class Fuzzy_Controller:
     '''
-    Fuzzy regulator object.
+    Fuzzy controller object.
     :param target_value: target regulated process value.
     :param max_response: maximum allowed response.
     '''
@@ -19,7 +19,7 @@ class Fuzzy_Regulator:
 
     def get_signal(self, last_value : float, last_time : int, time_before_that : int) -> float:
         '''
-        Get response from the regulator.
+        Get response from the controller.
         :param last_value: last value of controlled object.
         :param last_time: unused, last time of the measurement
         :param time_before_that: unused, time before the last_time
@@ -35,7 +35,7 @@ class Fuzzy_Regulator:
         return  max(-1, min(signal, 1)) * self.max_signal
 
     def get_errors(self) -> list:
-        """Get all measurement errors detected by regulator."""
+        """Get all measurement errors detected by controller."""
         return self.errors
 
     def set_rules(self) -> None:
@@ -96,7 +96,7 @@ class Fuzzy_Regulator:
         
 
     def reset(self, target_value : float = 25, max_response : int = MAX_TEMPERATURE_CHANGE ,max_signal : int = MAX_WORK) -> None:
-        """Change parameters of the regulator and reset measurements."""
+        """Change parameters of the controller and reset measurements."""
         self.target_value = target_value
         self.max_response = max_response
         self.max_signal = max_signal
