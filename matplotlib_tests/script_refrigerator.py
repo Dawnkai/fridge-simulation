@@ -1,10 +1,10 @@
-from simulation import Simulation
+from ..simulation import Simulation
 import matplotlib.pyplot as plt
 
 sim = Simulation()
-sim.reset_regulator(-55)
+sim.reset_controller(10, 1, 1, 1)
 sim.start()
-t, work, heat, temp, e = sim.get_display_results()
+t, temp, heat, work, e = sim.get_display_results()
 
 # Plotting output
 fig, ax = plt.subplots(2, 2, figsize=(8, 10))

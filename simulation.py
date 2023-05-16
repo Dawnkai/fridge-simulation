@@ -15,7 +15,7 @@ class Simulation:
     :param controller: controller object to use in the simulation.
     :param process: process object that simulation simulates.
     '''
-    def __init__(self, controller = Fuzzy_Controller(), process = Refrigerator()) -> None:
+    def __init__(self, controller = PI_Controller(), process = Refrigerator()) -> None:
         self.sampling = SAMPLING
         self.simulation_time = SIMULATION_TIME
         self.controller = controller
