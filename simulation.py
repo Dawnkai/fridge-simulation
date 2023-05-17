@@ -37,14 +37,14 @@ class Simulation:
         self.time_measurements = [0.0]
         self.process.reset(init_value)
 
-    def reset_controller(self, target_value, param_1, param_2, param_3):
+    def reset_controller(self, target_value, init_value, param_1, param_2, param_3):
         """Reset selected controller object."""
         if str(self.controller) == "PI":
-            self.controller.reset(target_value, param_1, param_2)
+            self.controller.reset(target_value, init_value, param_1, param_2)
         elif str(self.controller) == "PID":
-            self.controller.reset(target_value, param_1, param_2, param_3)
+            self.controller.reset(target_value, init_value, param_1, param_2, param_3)
         else:
-            self.controller.reset(target_value)
+            self.controller.reset(target_value, init_value)
 
     def get_controller_type(self) -> str:
         """Get name of selected controller."""

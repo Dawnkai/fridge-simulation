@@ -25,7 +25,7 @@ class Refrigerator:
         :param signal: signal from the controller.
         :param sampling: sampling rate of the simulation.
         '''
-        self.work_measurements.append(min(self.max_work, max(self.min_work, signal)))
+        self.work_measurements.append(min(self.max_work, max(self.min_work, -1*signal)))
 
         #(1055.05 * EER * W)/(3600)
         #1055.05 comes from calculating heat transfer from btu to Joules

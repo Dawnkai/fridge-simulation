@@ -1,4 +1,5 @@
 """PID controller component."""
+from constants import SAMPLING
 
 class PID_Controller:
     '''
@@ -22,11 +23,10 @@ class PID_Controller:
         :param last_time: latest measurement time.
         :param time_before_that: measurement time right before list_time.
         '''
-        self.errors.append(abs(self.target_value - last_value))
-        delta_time = last_time - time_before_that
-        integral_error = self.errors[-1] * delta_time
-        derivative_error = (self.errors[-1] - self.errors[-2]) / delta_time
-        return self.proportional_coefficient * self.errors[-1] + self.integral_coefficient * integral_error + self.derivative_coefficient * derivative_error
+        self.errors.append(self.target_value - last_value)
+        integral_part = (SAMPLING / self.integral_coefficient) * sum(self.errors)
+        derivative_part = (self.derivative_coefficient / SAMPLING) * (self.errors[-1] - self.errors[-2])
+        return self.proportional_coefficient * (self.errors[-1] + integral_part + derivative_part)
 
     def get_errors(self) -> list:
         """Get all measurement errors detected by controller."""
@@ -37,7 +37,7 @@ class PID_Controller:
         """Change parameters of the controller and reset measurements."""
 
         self.target_value = target_value
-        self.errors = [abs(init_value - target_value)]
+        self.errors = [target_value - init_value]
         self.proportional_coefficient = proportional_coefficient
         self.integral_coefficient = integral_coefficient
         self.derivative_coefficient = derivative_coefficient

@@ -143,7 +143,7 @@ def get_app_layout() -> dbc.Container:
     return dbc.Container(
         [
             dbc.Card([
-                html.H1("Levitating Ball Simulation", style={"textAlign": "center", "color": "white"}),
+                html.H1("Refrigeration Simulation", style={"textAlign": "center", "color": "white"}),
                 html.Hr(),
                 dbc.Row(
                     [

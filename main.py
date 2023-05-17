@@ -35,10 +35,10 @@ class Display:
         """Update graphs based on user input and database state."""
         if form_valid(controller_type, init_value, target_value, param_1, param_2, param_3):
             # Do not run the simulation on controller change (let the user set parameters first)
-            if controller_type != self.simulation.get_controller_type():
+            if controller_type != None and controller_type != self.simulation.get_controller_type():
                 self.simulation.set_controller(controller_type)
             else:
-                self.simulation.reset_controller(target_value, param_1, param_2, param_3)
+                self.simulation.reset_controller(target_value, init_value, param_1, param_2, param_3)
                 self.simulation.reset(init_value)
                 self.simulation.start()
                 result = self.simulation.get_display_results()
