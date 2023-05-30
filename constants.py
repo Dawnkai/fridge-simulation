@@ -19,7 +19,7 @@ MIN_TEMPERATURE_CHANGE = -50.0#C
 # Minimum worked performed by refrigerator
 MIN_WORK = 0#W
 # Maximum worked performed by refrigerator
-MAX_WORK = 500#W
+MAX_WORK = 2000#W
 
 
 # Mass of the controlled object
@@ -35,13 +35,14 @@ DB_FILEPATH = "database.db"
 # Number of simulations displayed on the result graph
 NUM_SIMULATIONS = 8
 
-# Minimum refrigerator work input
-MIN_WORK = 0 #[W]
-# Maximum refrigerator work input
-MAX_WORK = 500 #[W]
+
 # Mass of water cooled in refrigerator 
-WATER_MASS = 0.5 #m [kg]
+WATER_MASS = 0.15 #m [kg]
 # Specific heat of water
-WATER_SPECIFIC_HEAT = 4182 #m [J/kg /C]
-# Energy efficiency rating
-EER = 18 
+WATER_SPECIFIC_HEAT = 3.33 * 105 #c [J/kg]
+# Temperature of hot reservoir
+RESERVOIR_HOT = 293 #T_h [K] 
+# Temperature of cold reservoir
+RESERVOIR_COLD = 273 #T_l [K] 
+
+
