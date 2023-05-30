@@ -2,7 +2,7 @@
 
 from simpful import FuzzySystem, TriangleFuzzySet, LinguisticVariable
 
-from constants import MAX_TEMPERATURE_CHANGE,MAX_WORK
+from constants import MAX_WORK
 
 class Fuzzy_Controller:
     '''
@@ -10,8 +10,8 @@ class Fuzzy_Controller:
     :param target_value: target regulated process value.
     :param max_response: maximum allowed response.
     '''
-    def __init__(self, target_value : float = 15, max_response : int = MAX_TEMPERATURE_CHANGE, max_signal : int = MAX_WORK) -> None:
-        self.reset(target_value, max_response)
+    def __init__(self, target_value : float = 10, init_value : float = 25,  max_signal : int = MAX_WORK) -> None:
+        self.reset(target_value,init_value,  max_signal)
         self.set_rules()
 
     def __str__(self) -> str:
@@ -24,13 +24,18 @@ class Fuzzy_Controller:
         :param last_time: unused, last time of the measurement
         :param time_before_that: unused, time before the last_time
         '''
-        self.errors.append((last_value - self.target_value))
-        error= self.errors[-1] / self.max_response
-        prev_error = self.errors[-2] / self.max_response
+        self.errors.append( self.target_value - last_value)
+
+        error= self.errors[-1] / self.max_signal
+        prev_error = self.errors[-2]/ self.max_signal
+
+        if(len(self.errors)>2): self.change = error - prev_error
+        
         self.fuzzy_system.set_variable("error", error)
-        self.fuzzy_system.set_variable("error_diff", error - prev_error)
+        self.fuzzy_system.set_variable("error_diff", error - prev_error )
         signal = self.fuzzy_system.Mamdani_inference(['signal']).get('signal')
         self.fuzzy_system.set_variable("signal", signal)
+        
         
         return  max(-1, min(signal, 1)) * self.max_signal
 
@@ -71,7 +76,7 @@ class Fuzzy_Controller:
                 TriangleFuzzySet(0.20 * mult, 0.40 * mult, 0.60 * mult,  term="PMLL"),
                 TriangleFuzzySet(0.40 * mult, 0.60 * mult, 0.8 * mult, term="PL"),
                 TriangleFuzzySet(0.60 * mult, 0.80 * mult, 1.00 * mult, term="PLL"),
-                TriangleFuzzySet(0.8 * mult, 1.00 * mult, 1.00 * mult, term="PLLL")
+                TriangleFuzzySet(0.8 * mult, 1.00 * mult, 1.00 * mult, term='PLLL')
             ],
             universe_of_discourse=[-1.0, 1.0]
         ))
@@ -95,10 +100,10 @@ class Fuzzy_Controller:
 
         
 
-    def reset(self, target_value : float = 25, max_response : int = MAX_TEMPERATURE_CHANGE ,max_signal : int = MAX_WORK) -> None:
+    def reset(self, target_value : float = 10, init_value : float = 25 ,max_signal : int = MAX_WORK) -> None:
         """Change parameters of the controller and reset measurements."""
         self.target_value = target_value
-        self.max_response = max_response
         self.max_signal = max_signal
-        self.errors = [self.target_value/self.max_response]
+        self.errors = [(self.target_value - init_value)]
+        self.change=0
         

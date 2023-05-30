@@ -12,14 +12,10 @@ MIN_SIGNAL = -10#V
 MAX_SIGNAL = 10#V
 
 #For refrigerator
-# Maximum temperature change
-MAX_TEMPERATURE_CHANGE = 50.0#C
-# Minimum temperature change
-MIN_TEMPERATURE_CHANGE = -50.0#C
 # Minimum worked performed by refrigerator
-MIN_WORK = 0#W
+MIN_WORK = -2000#W
 # Maximum worked performed by refrigerator
-MAX_WORK = 2000#W
+MAX_WORK = 50#W
 
 
 # Mass of the controlled object
