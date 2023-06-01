@@ -15,7 +15,7 @@ def get_controls(controller_type : str, param_1 : float = 1.0, param_2 : float =
     return [
         html.Div(
             [
-                dbc.Label("Proportional gain: " if controller_type == 'PI' else 'Proportional coefficient'),
+                dbc.Label("Proportional gain (kp):"),
                 dcc.Input(
                     id="param-1",
                     min=0,
@@ -29,7 +29,7 @@ def get_controls(controller_type : str, param_1 : float = 1.0, param_2 : float =
         ),
         html.Div(
             [
-                dbc.Label("Integral gain: " if controller_type == 'PI' else 'Integral coefficient'),
+                dbc.Label("Reset time (Ti):"),
                 dcc.Input(
                     id="param-2",
                     min=0,
@@ -43,7 +43,7 @@ def get_controls(controller_type : str, param_1 : float = 1.0, param_2 : float =
         ),
         html.Div(
             [
-                dbc.Label("Derivative coefficient: "),
+                dbc.Label("Derivative time (Td): "),
                 dcc.Input(
                     id="param-3",
                     min=0,
@@ -79,9 +79,9 @@ def get_line_name(idx : int, result : list) -> str:
     if result[5] == "Fuzzy":
         return f"Fuzzy ({idx})"
     if result[5] == "PID":
-        return f"Kp: {result[6][0]}, Ki: {result[6][1]}, Kd: {result[6][2]}"
+        return f"kp: {result[6][0]}, Ti: {result[6][1]}, Td: {result[6][2]}"
     if result[5] == "PI":
-        return f"Tp: {result[6][0]}, Ti: {result[6][1]}"
+        return f"kp: {result[6][0]}, Ti: {result[6][1]}"
     return f"Simulation {idx}"
 
 def get_result_graphs(results : list) -> dcc.Tabs:
@@ -173,7 +173,8 @@ def get_app_layout() -> dbc.Container:
                                                 type="number",
                                                 id="initial-value",
                                                 step=1,
-                                                value=25
+                                                value=25,
+                                                min=7
                                             )
                                         ]
                                     ),
@@ -185,7 +186,9 @@ def get_app_layout() -> dbc.Container:
                                                 type="number",
                                                 id="target-value",
                                                 step=1,
-                                                value=10
+                                                value=10,
+                                                min=0,
+                                                max=25
                                             )
                                         ]
                                     ),

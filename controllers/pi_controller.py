@@ -9,8 +9,8 @@ class PI_Controller:
     :param integral_gain: integral gain of controller.
     '''
     def __init__(self, target_value : float = 10, init_value : float = 25, proportional_gain : float = 0.010,
-                 integral_gain : float = 0.1) -> None:
-        self.reset(target_value, init_value, proportional_gain, integral_gain)
+                 reset_time : float = 0.1) -> None:
+        self.reset(target_value, init_value, proportional_gain, reset_time)
 
     def __str__(self) -> str:
         return "PI"
@@ -24,15 +24,15 @@ class PI_Controller:
         '''
         self.errors.append(self.target_value - last_value)
         return self.proportional_gain * (self.errors[-1]
-                                         + ((SAMPLING / self.integral_gain) * sum(self.errors)))
+                                         + ((SAMPLING / self.reset_time) * sum(self.errors)))
 
     def get_errors(self) -> list:
         """Get all measurement errors detected by controller."""
         return self.errors
 
-    def reset(self, target_value : float = 10, init_value : float = 25, proportional_gain : float = 0.010, integral_gain : float = 0.1) -> None:
+    def reset(self, target_value : float = 10, init_value : float = 25, proportional_gain : float = 0.010, reset_time : float = 0.1) -> None:
         """Change parameters of the controller and reset measurements."""
         self.target_value = target_value
         self.errors = [target_value - init_value]
         self.proportional_gain = proportional_gain # T_p (1)
-        self.integral_gain = integral_gain # T_i (1)
+        self.reset_time = reset_time # T_i (1)
